@@ -4,9 +4,10 @@ import java.util.Random;
 
 public class FNoise implements Generator {
 	
-	int counter = 0;
-	int[] dice;
-	Random roller = new Random();
+	private int result = -1;
+	private int counter = 0;
+	private int[] dice;
+	private Random roller = new Random();
 
 	public FNoise(int numDice){
 		if(numDice > 32)
@@ -19,9 +20,6 @@ public class FNoise implements Generator {
 	}
 	
 	public int getResult(){
-		int result = 0;
-		for(int i = 0 ; i < dice.length ; i++)
-			result += dice[i];
 		return result;
 	}
 
@@ -36,12 +34,14 @@ public class FNoise implements Generator {
 				dice[i] = roller.nextInt(6) + 1;
 			mask <<= 1;
 		}
+		result = 0;
+		for(int i = 0 ; i < dice.length ; i++)
+			result += dice[i];
 	}
 
 	@Override
 	public int getNext() {
-		int result = getResult();
 		step();
-		return result;
+		return getResult();
 	}
 }

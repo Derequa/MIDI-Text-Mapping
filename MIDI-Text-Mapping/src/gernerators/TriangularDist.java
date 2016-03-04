@@ -1,23 +1,70 @@
 package gernerators;
 
+import java.util.Random;
+
 public class TriangularDist implements Generator {
+	
+	public static final int NORMAL = 0;
+	public static final int LEFT_SLANT = 1;
+	public static final int RIGHT_SLANT = 2;
+	
+	private int mode;
+	private int range;
+	private int lastResult;
+	private Random r = new Random();
+	
+	public TriangularDist(int range){
+		this(NORMAL, range);
+	}
+	
+	public TriangularDist(int mode, int range){
+		this.mode = mode;
+		this.range = range;
+		step();
+	}
+	
+	public void changeMode(int newMode){
+		if((newMode != NORMAL) && (newMode != LEFT_SLANT) && (newMode != RIGHT_SLANT))
+			return;
+		else
+			mode = newMode;
+	}
+	
+	public void changeRange(int newRange){
+		if(newRange < 0)
+			return;
+		range = newRange;
+	}
 
 	@Override
 	public int getResult() {
-		// TODO Auto-generated method stub
-		return 0;
+		return lastResult;
 	}
 
 	@Override
 	public void step() {
-		// TODO Auto-generated method stub
-
+		int num1 = r.nextInt(range + 1);
+		int num2 = r.nextInt(range + 1);
+		if(mode == NORMAL)
+			lastResult = ((num1 + num2) / 2);
+		else if(mode == LEFT_SLANT){
+			if(num1 < num2)
+				lastResult = num1;
+			else
+				lastResult = num2;
+		}
+		else if(mode == RIGHT_SLANT){
+			if(num1 > num2)
+				lastResult = num1;
+			else
+				lastResult = num2;
+		}
 	}
 
 	@Override
 	public int getNext() {
-		// TODO Auto-generated method stub
-		return 0;
+		step();
+		return getResult();
 	}
 
 }

@@ -1,16 +1,28 @@
 package gernerators;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Random;
 
 public class Markov implements Generator {
 	
 	public boolean balanceProbs = false;
 	private int numStates;
-	private LinkedList<HashMap<Integer, Float>> transitionTable;
+	private int currentState;
+	private Random r = new Random();
+	private LinkedList<HashMap<Integer, Float>> transitionTable = new LinkedList<HashMap<Integer, Float>>();
 	
 	public Markov(int numStates){
 		this.numStates = numStates - 1;
+		currentState = r.nextInt(numStates);
+		for(int i = 0 ; i < numStates ; i++){
+			HashMap<Integer, Float> table = new HashMap<Integer, Float>();
+			for(int j = 0 ; j < numStates ; j++)
+				table.put(new Integer(j), new Float(r.nextFloat()));
+			balanceProb(table);
+			transitionTable.add(table);
+		}
 	}
 	
 	public int getNumberOfStates(){
@@ -25,13 +37,12 @@ public class Markov implements Generator {
 	
 	public int addState(){
 		numStates++;
-		int count = 0;
 		for(HashMap<Integer, Float> table : transitionTable){
-			generateProbFor(count++, numStates, table);
+			generateProbFor(numStates, table);
 			balanceProb(table);
 		}
 		HashMap<Integer, Float> newTable = new HashMap<Integer, Float>();
-		generateProbs(numStates, newTable);
+		generateProbs(newTable);
 		transitionTable.addLast(newTable);
 		return numStates + 1;
 	}
@@ -48,32 +59,74 @@ public class Markov implements Generator {
 
 	@Override
 	public int getResult() {
-		// TODO Auto-generated method stub
-		return 0;
+		return currentState;
 	}
 
 	@Override
 	public void step() {
-		// TODO Auto-generated method stub
-
+		for(Integer i : transitionTable.get(currentState).keySet()){
+			if(getProbPercenetage(transitionTable.get(currentState).get(i).floatValue())){
+				currentState = i.intValue();
+				return;
+			}
+		}
 	}
 
 	@Override
 	public int getNext() {
-		// TODO Auto-generated method stub
-		return 0;
+		step();
+		return getResult();
 	}
 	
-	private void generateProbFor(int self, int other, HashMap<Integer, Float> table){
-		
+	private boolean getProbPercenetage(float percentage){
+		return r.nextDouble() <= percentage;
 	}
 	
-	private void generateProbs(int self, HashMap<Integer, Float> table){
+	private void generateProbFor(int other, HashMap<Integer, Float> table){
+		float gen = r.nextFloat();
+		table.put(new Integer(other), new Float(gen));
+		balanceProb(table);
+	}
+	
+	private void generateProbs(HashMap<Integer, Float> table){
+		float[] percentages = new float[table.keySet().size()];
+		float sum = 0.0f;
+		for(int i = 0 ; i < percentages.length ; i++){
+			float gen = r.nextFloat();
+			percentages[i] = gen;
+			sum += gen;
+		}
+		Iterator<Integer> iterator = table.keySet().iterator();
+		for(int i = 0 ; (i < percentages.length) && iterator.hasNext(); i++)
+			table.put(iterator.next(), new Float(percentages[i] /= sum));
 		
 	}
 	
 	private void balanceProb(HashMap<Integer, Float> table){
+		float[] percentages = new float[table.keySet().size()];
+		float sum = 0.0f;
+		Iterator<Integer> iterator = table.keySet().iterator();
+		for(int i = 0 ; i < percentages.length ; i++){
+			float mappedVal = table.get(iterator.next());
+			percentages[i] = mappedVal;
+			sum += mappedVal;
+		}
+		iterator = table.keySet().iterator();
+		for(int i = 0 ; (i < percentages.length) && iterator.hasNext(); i++)
+			table.put(iterator.next(), new Float(percentages[i] /= sum));
+	}
+	
+	public String toString(){
+		String build = "Markov Transition Table:\n";
+		for(int i = 0 ; i < transitionTable.size() ; i++){
+			build +="State: " + i + "  --  Transition State \t Probability\n";
+			HashMap<Integer, Float> table = transitionTable.get(i);
+			for(Integer state : table.keySet())
+				build += "              " + state.intValue() + "\t\t\t " + table.get(state).floatValue() + "\n";
+			build += "\n";
+		}
 		
+		return build;
 	}
 
 }
