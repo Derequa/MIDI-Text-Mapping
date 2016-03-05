@@ -44,4 +44,8 @@ public class FNoise implements Generator {
 		step();
 		return getResult();
 	}
+	
+	public int getNumDice(){
+		return dice.length;
+	}
 }

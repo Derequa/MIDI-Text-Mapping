@@ -128,5 +128,9 @@ public class Markov implements Generator {
 		
 		return build;
 	}
+	
+	public int getCurrentState(){
+		return currentState;
+	}
 
 }
