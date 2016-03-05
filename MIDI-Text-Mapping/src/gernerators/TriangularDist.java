@@ -45,19 +45,19 @@ public class TriangularDist implements Generator {
 	public void step() {
 		int num1 = r.nextInt(range + 1);
 		int num2 = r.nextInt(range + 1);
-		if(mode == NORMAL)
-			lastResult = ((num1 + num2) / 2);
-		else if(mode == LEFT_SLANT){
-			if(num1 < num2)
-				lastResult = num1;
-			else
-				lastResult = num2;
-		}
-		else if(mode == RIGHT_SLANT){
-			if(num1 > num2)
-				lastResult = num1;
-			else
-				lastResult = num2;
+		switch (mode){
+			case NORMAL:		lastResult = ((num1 + num2) / 2);
+								break;
+			case LEFT_SLANT:	if(num1 < num2)
+									lastResult = num1;
+								else
+									lastResult = num2;
+								break;
+			case RIGHT_SLANT:	if(num1 > num2)
+									lastResult = num1;
+								else
+									lastResult = num2;
+								break;
 		}
 	}
 
