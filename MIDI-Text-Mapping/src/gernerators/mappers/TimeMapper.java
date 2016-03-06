@@ -20,28 +20,48 @@ public class TimeMapper {
 	
 	public TimeMapper(Generator g, int maxTime){
 		this.g = g;
+		this.maxTime = maxTime;
 	}
 	
 	public int stepTime(){
-		int nextTime = currentTime;
+		int nextTime = 0;
 		
 		if(g instanceof FNoise){
-			
+			nextTime = mapFNoise((FNoise) g);
 		}
 		else if(g instanceof KarplusStrong){
-			
+			nextTime = mapKarplusStrong((KarplusStrong) g);
 		}
 		else if(g instanceof Markov){
-			
+			nextTime = mapMarkov((Markov) g);
 		}
 		else if(g instanceof TriangularDist){
-			
+			nextTime = mapTriangularDist((TriangularDist) g);
 		}
 		
+		currentTime = nextTime;
 		return currentTime;
 	}
 	
 	public int getCurrentTime(){
 		return currentTime;
+	}
+	
+	private int mapFNoise(FNoise f){
+		int maxRange = f.getNumDice() * 6;
+		f.step();
+		return 0;
+	}
+	
+	private int mapKarplusStrong(KarplusStrong k){
+		return 0;
+	}
+	
+	private int mapMarkov(Markov m){
+		return 0;
+	}
+	
+	private int mapTriangularDist(TriangularDist t){
+		return 0;
 	}
 }

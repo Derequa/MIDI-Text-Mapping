@@ -1,7 +1,9 @@
 package gernerators;
 
+import gernerators.properties.Property;
+
 public interface Generator {
-	public int getResult();
+	public Property getResult();
 	public void step();
-	public int getNext();
+	public Property getNext();
 }

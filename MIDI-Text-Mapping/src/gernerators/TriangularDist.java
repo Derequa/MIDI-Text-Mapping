@@ -2,6 +2,9 @@ package gernerators;
 
 import java.util.Random;
 
+import gernerators.properties.Property;
+import gernerators.properties.Time;
+
 public class TriangularDist implements Generator {
 	
 	public static final int NORMAL = 0;
@@ -9,17 +12,26 @@ public class TriangularDist implements Generator {
 	public static final int RIGHT_SLANT = 2;
 	
 	private int mode;
-	private int range;
-	private int lastResult;
-	private Random r = new Random();
+	private Property lastResult;
+	private Property worker0;
+	private Property worker1;
 	
-	public TriangularDist(int range){
-		this(NORMAL, range);
+	public TriangularDist(int typeFlag){
+		this(NORMAL, typeFlag);
 	}
 	
-	public TriangularDist(int mode, int range){
+	public TriangularDist(int mode, int typeFlag){
 		this.mode = mode;
-		this.range = range;
+		switch(typeFlag){
+			case Property.ID_TIME:		lastResult = new Time();
+										worker0 = new Time();
+										worker1 = new Time();
+										break;
+			case Property.ID_VELOCITY:	//
+										break;
+			default:					throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
+		}
+		// TODO Add support for more types
 		step();
 	}
 	
@@ -29,42 +41,39 @@ public class TriangularDist implements Generator {
 		else
 			mode = newMode;
 	}
-	
-	public void changeRange(int newRange){
-		if(newRange < 0)
-			return;
-		range = newRange;
-	}
 
 	@Override
-	public int getResult() {
+	public Property getResult() {
 		return lastResult;
 	}
 
 	@Override
 	public void step() {
-		int num1 = r.nextInt(range + 1);
-		int num2 = r.nextInt(range + 1);
+		worker0.randomize();
+		worker1.randomize();
 		switch (mode){
-			case NORMAL:		lastResult = ((num1 + num2) / 2);
+			case NORMAL:		lastResult.setValueToClosest((worker0.getValue() + worker1.getValue()) / 2);
 								break;
-			case LEFT_SLANT:	if(num1 < num2)
-									lastResult = num1;
+			case LEFT_SLANT:	if(worker0.getValue() < worker1.getValue())
+									lastResult.setValueToClosest(worker0.getValue());
 								else
-									lastResult = num2;
+									lastResult.setValueToClosest(worker1.getValue());
 								break;
-			case RIGHT_SLANT:	if(num1 > num2)
-									lastResult = num1;
+			case RIGHT_SLANT:	if(worker0.getValue() > worker1.getValue())
+									lastResult.setValueToClosest(worker0.getValue());
 								else
-									lastResult = num2;
+									lastResult.setValueToClosest(worker1.getValue());
 								break;
 		}
 	}
 
 	@Override
-	public int getNext() {
+	public Property getNext() {
 		step();
 		return getResult();
 	}
 
+	public int getMode(){
+		return mode;
+	}
 }

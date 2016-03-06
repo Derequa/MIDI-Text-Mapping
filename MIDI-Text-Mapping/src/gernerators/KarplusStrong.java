@@ -3,24 +3,33 @@ package gernerators;
 import java.util.Arrays;
 import java.util.Random;
 
+import gernerators.properties.Property;
+import gernerators.properties.Time;
+
 public class KarplusStrong implements Generator {
 	
-	private Random r = new Random();
-	private int range;
 	private int resetThreshold = 10;
 	private int counter = 0;
 	private int currentIndex = 0;
-	private int[] buffer;
+	private Property[] buffer;
 	
-	public KarplusStrong(int bufferLength, int range, int resetThreshold){
-		this.range = range;
+	public KarplusStrong(int bufferLength, int resetThreshold, int typeFlag){
 		this.resetThreshold = resetThreshold;
-		buffer = new int[bufferLength];
+		buffer = new Property[bufferLength];
+		for(int i = 0 ; i < bufferLength ; i++){
+			switch(typeFlag){
+				case Property.ID_TIME:		buffer[i] = new Time();
+											break;
+				case Property.ID_VELOCITY: 	// TODO Add stuff
+											break;
+				default:					throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
+			}
+		}
 		resetBuffer();
 	}
 
 	@Override
-	public int getResult() {
+	public Property getResult() {
 		return buffer[currentIndex];
 	}
 
@@ -35,12 +44,12 @@ public class KarplusStrong implements Generator {
 			nextIndex = currentIndex + 1;
 		else
 			counter++;
-		buffer[currentIndex] = (buffer[currentIndex] + buffer[nextIndex]) / 2;
+		buffer[currentIndex].setValueToClosest((buffer[currentIndex].getValue() + buffer[nextIndex].getValue()) / 2);
 		currentIndex = nextIndex;
 	}
 
 	@Override
-	public int getNext() {
+	public Property getNext() {
 		step();
 		return getResult();
 	}
@@ -48,7 +57,7 @@ public class KarplusStrong implements Generator {
 	public void resetBuffer(){
 		counter = 0;
 		for(int i = 0 ; i < buffer.length ; i++)
-			buffer[i] = r.nextInt(range + 1);
+			buffer[i].randomize();;
 	}
 	
 	public boolean isPastThreshold(int threshold){

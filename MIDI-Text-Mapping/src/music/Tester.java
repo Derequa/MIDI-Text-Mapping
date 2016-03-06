@@ -3,6 +3,7 @@ package music;
 import gernerators.FNoise;
 import gernerators.KarplusStrong;
 import gernerators.Markov;
+import gernerators.properties.Property;
 
 public class Tester {
 	public static void main(String[] args){
@@ -11,7 +12,7 @@ public class Tester {
 	
 	public static void testMarkov(){
 		System.out.println("Creating Markov Object...");
-		Markov m = new Markov(4);
+		Markov m = new Markov();
 		System.out.println(m);
 		System.out.println("\nCurrent State: " + m.getResult());
 		for(int i = 0 ; i < 3 ; i++){
@@ -36,7 +37,7 @@ public class Tester {
 	public static void testFNoise(){
 		String build = "";
 		System.out.println("Creating FNoise Object...");
-		FNoise f = new FNoise(3);
+		FNoise f = new FNoise(3, Property.ID_TIME);
 		for(int c = 0 ; c < 3 ; c++){
 			build += "[ ";
 			for(int i = 0 ; i < 8 ; i++){
