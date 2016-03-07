@@ -1,42 +1,46 @@
 package gernerators;
 
-import java.util.Random;
-
 import gernerators.properties.Property;
+import gernerators.properties.Property.PropertyType;
 import gernerators.properties.Time;
 
 public class TriangularDist implements Generator {
 	
-	public static final int NORMAL = 0;
-	public static final int LEFT_SLANT = 1;
-	public static final int RIGHT_SLANT = 2;
+	public enum DistributionScheme {
+		NORMAL,
+		LEFT_SLANT,
+		RIGHT_SLANT
+	}
 	
-	private int mode;
+	
+	private DistributionScheme mode;
 	private Property lastResult;
 	private Property worker0;
 	private Property worker1;
 	
-	public TriangularDist(int typeFlag){
-		this(NORMAL, typeFlag);
+	public TriangularDist(PropertyType typeFlag){
+		this(DistributionScheme.NORMAL, typeFlag);
 	}
 	
-	public TriangularDist(int mode, int typeFlag){
+	public TriangularDist(DistributionScheme mode, PropertyType typeFlag){
 		this.mode = mode;
 		switch(typeFlag){
-			case Property.ID_TIME:		lastResult = new Time();
-										worker0 = new Time();
-										worker1 = new Time();
-										break;
-			case Property.ID_VELOCITY:	//
-										break;
-			default:					throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
+			case TIME:			lastResult = new Time();
+								worker0 = new Time();
+								worker1 = new Time();
+								break;
+			case VELOCITY:		//
+								break;
+			default:			throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
 		}
 		// TODO Add support for more types
 		step();
 	}
 	
-	public void changeMode(int newMode){
-		if((newMode != NORMAL) && (newMode != LEFT_SLANT) && (newMode != RIGHT_SLANT))
+	public void changeMode(DistributionScheme newMode){
+		if((newMode != DistributionScheme.NORMAL) && 
+		   (newMode != DistributionScheme.LEFT_SLANT) && 
+		   (newMode != DistributionScheme.RIGHT_SLANT))
 			return;
 		else
 			mode = newMode;
@@ -73,7 +77,7 @@ public class TriangularDist implements Generator {
 		return getResult();
 	}
 
-	public int getMode(){
+	public DistributionScheme getMode(){
 		return mode;
 	}
 }

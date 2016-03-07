@@ -1,26 +1,32 @@
 package gernerators;
 
 import java.util.Arrays;
-import java.util.Random;
-
 import gernerators.properties.Property;
+import gernerators.properties.Property.PropertyType;
 import gernerators.properties.Time;
 
 public class KarplusStrong implements Generator {
+	
+	public static final int DEFAULT_BUFFER_LENGTH = 10;
+	public static final int DEFAULT_THRESHOLD = 20;
 	
 	private int resetThreshold = 10;
 	private int counter = 0;
 	private int currentIndex = 0;
 	private Property[] buffer;
 	
-	public KarplusStrong(int bufferLength, int resetThreshold, int typeFlag){
+	public KarplusStrong(PropertyType typeFlag){
+		this(DEFAULT_BUFFER_LENGTH, DEFAULT_THRESHOLD, typeFlag);
+	}
+	
+	public KarplusStrong(int bufferLength, int resetThreshold, PropertyType typeFlag){
 		this.resetThreshold = resetThreshold;
 		buffer = new Property[bufferLength];
 		for(int i = 0 ; i < bufferLength ; i++){
 			switch(typeFlag){
-				case Property.ID_TIME:		buffer[i] = new Time();
+				case TIME:		buffer[i] = new Time();
 											break;
-				case Property.ID_VELOCITY: 	// TODO Add stuff
+				case VELOCITY: 	// TODO Add stuff
 											break;
 				default:					throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
 			}

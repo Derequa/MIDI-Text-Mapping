@@ -29,14 +29,17 @@ public class MidiFile {
 	}
 	
 	public MidiFile(String filename){
-		this.filename = filename;
+		if(filename == null)
+			this.filename = "output.mid";
+		else
+			this.filename = filename;
 		setup();
 	}
 	
 	private void setup(){
 		try {
 			// Create a new MIDI sequence with 24 ticks per beat
-			Sequence s = new Sequence(javax.sound.midi.Sequence.PPQ, TICKS_PER_BEAT);
+			this.s = new Sequence(javax.sound.midi.Sequence.PPQ, TICKS_PER_BEAT);
 
 			// Obtain a MIDI track from the sequence
 			t0 = s.createTrack();
@@ -84,30 +87,31 @@ public class MidiFile {
 		}
 	}
 	
-	public void turnOnNote(int note, int timestamp, int duration){
-		turnOnNote(note, timestamp);
-		turnOffNote(note, timestamp + duration);
+	public void playNote(Note n){
+		turnOnNote(n.getNote(), n.getVelocity(), n.getStartingTime());
+		turnOffNote(n.getNote(), n.getVelocity(), n.getStartingTime() + n.getDuration());
 	}
 	
-	public void turnOnNote(int note, int timestamp){
+	public void turnOnNote(int note, int velocity, int timestamp){
 		ShortMessage mm = new ShortMessage();
 		try {
-			mm.setMessage(0x90, note, timestamp);
+			mm.setMessage(0x90, note, velocity);
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 		}
-		MidiEvent me = new MidiEvent(mm,(long)1);
+		MidiEvent me = new MidiEvent(mm,(long)timestamp);
 		t0.add(me);
 	}
 	
-	public void turnOffNote(int note, int timestamp){
+	public void turnOffNote(int note, int velocity, int timestamp){
 		ShortMessage mm = new ShortMessage();
 		try {
-			mm.setMessage(0x80, note, timestamp);
+			mm.setMessage(0x80, note, velocity);
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
+			System.exit(1);
 		}
-		MidiEvent me = new MidiEvent(mm,(long)121);
+		MidiEvent me = new MidiEvent(mm,(long)timestamp);
 		t0.add(me);
 	}
 	

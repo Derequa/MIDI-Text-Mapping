@@ -110,4 +110,8 @@ public class Note implements Comparable<Note>{
 		else
 			return 1;
 	}
+	
+	public String toString(){
+		return "[ Note: " + midiNote + " Velocity: " + velocity + " Start: " + start + " Duration " + duration + " ]\n";
+	}
 }

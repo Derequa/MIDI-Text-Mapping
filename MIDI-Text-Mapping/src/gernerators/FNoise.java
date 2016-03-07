@@ -1,30 +1,41 @@
 package gernerators;
 
-import java.util.Random;
-
 import gernerators.properties.Property;
+import gernerators.properties.Property.PropertyType;
 import gernerators.properties.Time;
 
 public class FNoise implements Generator {
 	
+	public static final int DEFAULT_DICE = 4;
+	private static final int MAX_DICE = 32;
 	private Property result = null;
 	private int counter = 0;
 	private Property[] diceValues;
-	private Random roller = new Random();
+	
+	public FNoise(PropertyType typeFlag){
+		this(DEFAULT_DICE, typeFlag);
+	}
 
-	public FNoise(int numDice, int typeFlag){
-		if(numDice > 32)
-			numDice = 32;
+	public FNoise(int numDice, PropertyType typeFlag){
+		if(numDice > MAX_DICE)
+			numDice = MAX_DICE;
 		else if(numDice < 1)
 			numDice = 1;
 		diceValues = new Property[numDice];
+		switch(typeFlag){
+			case TIME:				result = new Time();
+									break;
+			case VELOCITY:			//
+									break;
+			default:				throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
+		}
 		for(int i = 0 ; i < diceValues.length ; i++){
 			switch(typeFlag){
-			case Property.ID_TIME:			diceValues[i] = new Time();
-											break;
-			case Property.ID_VELOCITY:		//
-											break;
-			default:						throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
+				case TIME:				diceValues[i] = new Time();
+										break;
+				case VELOCITY:			//
+										break;
+				default:				throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
 			}
 			// TODO Add other types
 		}

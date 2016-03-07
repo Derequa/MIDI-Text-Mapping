@@ -2,8 +2,10 @@ package gernerators.properties;
 
 public abstract class Property {
 	
-	public static final int ID_TIME = 0;
-	public static final int ID_VELOCITY = 1;
+	public enum PropertyType {
+		TIME,
+		VELOCITY
+	}
 	
 	protected int value;
 	

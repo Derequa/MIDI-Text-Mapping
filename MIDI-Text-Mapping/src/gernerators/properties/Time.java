@@ -4,6 +4,7 @@ import java.util.Random;
 
 public class Time extends Property implements Comparable<Property> {
 	
+	public static final int NO_TICK = 0;
 	public static final int TICKS_PER_QUARTER = music.MidiFile.TICKS_PER_BEAT;
 	public static final int TICKS_PER_HALF = 2 * TICKS_PER_QUARTER;
 	public static final int TICKS_PER_WHOLE = 2 * TICKS_PER_HALF;
@@ -14,15 +15,17 @@ public class Time extends Property implements Comparable<Property> {
 										 TICKS_PER_EIGTH,
 										 TICKS_PER_QUARTER,
 										 TICKS_PER_HALF,
-										 TICKS_PER_WHOLE};
+										 TICKS_PER_WHOLE,
+										 NO_TICK};
 	
 	public static final int EIGTH_INDEX = 0;
 	public static final int SIXTEENTH_INDEX = 1;
 	public static final int QUARTER_INDEX = 2;
 	public static final int HALF_INDEX = 3;
 	public static final int WHOLE_INDEX = 4;
+	public static final int NO_TICK_INDEX = 5;
 	
-	private static Random r = new Random();
+	private static Random r = new Random(System.nanoTime());
 	
 	public Time(){
 		super(0);
@@ -33,14 +36,17 @@ public class Time extends Property implements Comparable<Property> {
 		int minDist = Integer.MAX_VALUE;
 		int timingIndex = QUARTER_INDEX;
 		for(int i = 0 ; i < TIMINGS.length ; i++){
-			if(Math.abs(newValue - TIMINGS[i]) < minDist)
+			if(Math.abs(newValue - TIMINGS[i]) < minDist){
 				timingIndex = i;
+				minDist = Math.abs(newValue - TIMINGS[i]);
+			}
 		}
 		value = TIMINGS[timingIndex];
 	}
 	
 	public void randomize(){
-		setValueToClosest(r.nextInt(TICKS_PER_WHOLE + 1));
+		int gen = r.nextInt(TICKS_PER_WHOLE + 1);
+		setValueToClosest(gen);
 	}
 
 	@Override
