@@ -1,9 +1,13 @@
 package gernerators;
 
 import java.util.Arrays;
+
+import gernerators.properties.Organization;
+import gernerators.properties.Organization.OrgMode;
 import gernerators.properties.Property;
 import gernerators.properties.Property.PropertyType;
 import gernerators.properties.Time;
+import gernerators.properties.Velocity;
 
 public class KarplusStrong implements Generator {
 	
@@ -24,11 +28,17 @@ public class KarplusStrong implements Generator {
 		buffer = new Property[bufferLength];
 		for(int i = 0 ; i < bufferLength ; i++){
 			switch(typeFlag){
-				case TIME:		buffer[i] = new Time();
-											break;
-				case VELOCITY: 	// TODO Add stuff
-											break;
-				default:					throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
+				case DURATION:		buffer[i] = new Time();
+									break;
+				case SPACING:		buffer[i] = new Time();
+									break;
+				case VELOCITY: 		buffer[i] = new Velocity();
+									break;
+				case MICRO_ORG:		buffer[i] = new Organization(OrgMode.MICRO);
+									break;
+				case MACRO_ORG:		buffer[i] = new Organization(OrgMode.MACRO);
+									break;				
+				default:			throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
 			}
 		}
 		resetBuffer();

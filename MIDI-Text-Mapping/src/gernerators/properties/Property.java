@@ -3,8 +3,11 @@ package gernerators.properties;
 public abstract class Property {
 	
 	public enum PropertyType {
-		TIME,
-		VELOCITY
+		DURATION,
+		SPACING,
+		VELOCITY,
+		MICRO_ORG,
+		MACRO_ORG
 	}
 	
 	protected int value;

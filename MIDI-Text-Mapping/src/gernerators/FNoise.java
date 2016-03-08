@@ -1,8 +1,11 @@
 package gernerators;
 
+import gernerators.properties.Organization;
+import gernerators.properties.Organization.OrgMode;
 import gernerators.properties.Property;
 import gernerators.properties.Property.PropertyType;
 import gernerators.properties.Time;
+import gernerators.properties.Velocity;
 
 public class FNoise implements Generator {
 	
@@ -23,17 +26,29 @@ public class FNoise implements Generator {
 			numDice = 1;
 		diceValues = new Property[numDice];
 		switch(typeFlag){
-			case TIME:				result = new Time();
+			case DURATION:			result = new Time();
 									break;
-			case VELOCITY:			//
+			case SPACING:			result = new Time();
+									break;
+			case VELOCITY:			result = new Velocity();
+									break;
+			case MICRO_ORG:			result = new Organization(OrgMode.MICRO);
+									break;
+			case MACRO_ORG:			result = new Organization(OrgMode.MACRO);
 									break;
 			default:				throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
 		}
 		for(int i = 0 ; i < diceValues.length ; i++){
 			switch(typeFlag){
-				case TIME:				diceValues[i] = new Time();
+				case DURATION:			diceValues[i] = new Time();
 										break;
-				case VELOCITY:			//
+				case SPACING:			diceValues[i] = new Time();
+										break;
+				case VELOCITY:			diceValues[i] = new Velocity();
+										break;
+				case MICRO_ORG:			diceValues[i] = new Organization(OrgMode.MICRO);
+										break;
+				case MACRO_ORG:			diceValues[i] = new Organization(OrgMode.MACRO);
 										break;
 				default:				throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
 			}

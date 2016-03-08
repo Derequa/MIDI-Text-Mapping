@@ -106,9 +106,9 @@ public class Note implements Comparable<Note>{
 		if(equals(arg0))
 			return 0;
 		else if(start > arg0.getStartingTime())
-			return -1;
-		else
 			return 1;
+		else
+			return -1;
 	}
 	
 	public String toString(){

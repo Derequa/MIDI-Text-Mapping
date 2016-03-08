@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -77,16 +78,32 @@ public class Mapper {
 			for(byte b = fileInput.readByte() ; ; b = fileInput.readByte()){
 				Integer wrappedByte = new Integer(b);
 				ticksSoFar += spacing.getNext().getValue();
-				int dur = duration.getNext().getValue();
 				if(!mappingScheme.containsKey(wrappedByte))
 					continue;
 				for(Integer i : mappingScheme.get(wrappedByte)){
-					mappedNotes.add(new Note(i.intValue(), Velocity.DEFAULT_VELOCITY, ticksSoFar, dur));
+					mappedNotes.add(new Note(i.intValue(), velocity.getResult().getValue(), ticksSoFar, duration.getResult().getValue()));
 				}
+				velocity.step();
+				duration.step();
 			}
 		} catch (IOException e){
 			if(Tester.debug)
 				System.out.println("DONE READING FILE");
+		}
+	}
+	
+	public void organize(){
+		if(microOrg == null)
+			return;
+		Collections.sort(mappedNotes);
+		int newestTime = -1;
+		for(Note n : mappedNotes){
+			if(n.getStartingTime() > newestTime){
+				microOrg.step();
+				newestTime = n.getStartingTime();
+			}
+			int delta = microOrg.getResult().getValue();
+			n.setNote(n.getNote() + delta);
 		}
 	}
 	
@@ -171,13 +188,13 @@ public class Mapper {
 	
 	public void switchSpacing(GeneratorType newType){
 		switch(newType){
-			case FNOISE:		spacing  = new FNoise(PropertyType.TIME);
+			case FNOISE:		spacing  = new FNoise(PropertyType.SPACING);
 								break;
-			case KARPLUS:		spacing = new KarplusStrong(PropertyType.TIME);
+			case KARPLUS:		spacing = new KarplusStrong(PropertyType.SPACING);
 								break;
-			case TRIANGULAR:	spacing = new TriangularDist(PropertyType.TIME);
+			case TRIANGULAR:	spacing = new TriangularDist(PropertyType.SPACING);
 								break;
-			case MARKOV:		spacing = setupDefaultMarkov(PropertyType.TIME);
+			case MARKOV:		spacing = setupDefaultMarkov(PropertyType.SPACING);
 								break;
 			default:			throw new IllegalArgumentException("INVALID SPACING GENERATOR MODE");
 		}
@@ -185,13 +202,13 @@ public class Mapper {
 	
 	public void switchDuration(GeneratorType newType){
 		switch(newType){
-			case FNOISE:		duration  = new FNoise(PropertyType.TIME);
+			case FNOISE:		duration  = new FNoise(PropertyType.DURATION);
 								break;
-			case KARPLUS:		duration = new KarplusStrong(PropertyType.TIME);
+			case KARPLUS:		duration = new KarplusStrong(PropertyType.DURATION);
 								break;
-			case TRIANGULAR:	duration = new TriangularDist(PropertyType.TIME);
+			case TRIANGULAR:	duration = new TriangularDist(PropertyType.DURATION);
 								break;
-			case MARKOV:		duration = setupDefaultMarkov(PropertyType.TIME);
+			case MARKOV:		duration = setupDefaultMarkov(PropertyType.DURATION);
 								break;
 			default:			throw new IllegalArgumentException("INVALID DURATION GENERATOR MODE");
 		}
@@ -199,7 +216,7 @@ public class Mapper {
 	
 	public void switchVelocity(GeneratorType newType){
 		switch(newType){
-			case FNOISE:		velocity  = new FNoise(PropertyType.VELOCITY);
+			case FNOISE:		velocity = new FNoise(PropertyType.VELOCITY);
 								break;
 			case KARPLUS:		velocity = new KarplusStrong(PropertyType.VELOCITY);
 								break;
@@ -214,13 +231,13 @@ public class Mapper {
 	public void switchMicroOrg(GeneratorType newType){
 		// TODO fix dis
 		switch(newType){
-			case FNOISE:		//
+			case FNOISE:		microOrg = new FNoise(PropertyType.MICRO_ORG);
 								break;
-			case NONE:			//
+			case NONE:			microOrg = null;
 								break;
-			case TRIANGULAR:	//
+			case TRIANGULAR:	microOrg = new TriangularDist(PropertyType.MICRO_ORG);
 								break;
-			case MARKOV:		//
+			case MARKOV:		microOrg = setupDefaultMarkov(PropertyType.MICRO_ORG);
 								break;
 			default:			throw new IllegalArgumentException("INVALID MICRO ORGANIZATION GENERATOR MODE");
 		}
@@ -229,13 +246,13 @@ public class Mapper {
 	public void switchMacroOrg(GeneratorType newType){
 		// TODO fix dis
 		switch(newType){
-			case FNOISE:		//
+			case FNOISE:		macroOrg = new FNoise(PropertyType.MACRO_ORG);
 								break;
-			case NONE:			//
+			case NONE:			macroOrg = null;
 								break;
-			case TRIANGULAR:	//
+			case TRIANGULAR:	macroOrg = new TriangularDist(PropertyType.MACRO_ORG);
 								break;
-			case MARKOV:		//
+			case MARKOV:		macroOrg = setupDefaultMarkov(PropertyType.MACRO_ORG);
 								break;
 			default:			throw new IllegalArgumentException("INVALID MACRO ORGANIZATION GENERATOR MODE");
 		}
@@ -256,11 +273,11 @@ public class Mapper {
 	}
 	
 	public void switchMicroOrg(Generator newMicroOrg){
-		// TODO fix dis
+		microOrg = newMicroOrg;
 	}
 	
 	public void switchMacroOrg(Generator newMacroOrg){
-		// TODO fix dis
+		macroOrg = newMacroOrg;
 	}
 	
 	private Markov setupDefaultMarkov(PropertyType type){

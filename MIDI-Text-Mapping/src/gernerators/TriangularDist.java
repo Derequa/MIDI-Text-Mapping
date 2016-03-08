@@ -1,8 +1,11 @@
 package gernerators;
 
+import gernerators.properties.Organization;
+import gernerators.properties.Organization.OrgMode;
 import gernerators.properties.Property;
 import gernerators.properties.Property.PropertyType;
 import gernerators.properties.Time;
+import gernerators.properties.Velocity;
 
 public class TriangularDist implements Generator {
 	
@@ -25,11 +28,25 @@ public class TriangularDist implements Generator {
 	public TriangularDist(DistributionScheme mode, PropertyType typeFlag){
 		this.mode = mode;
 		switch(typeFlag){
-			case TIME:			lastResult = new Time();
+			case DURATION:		lastResult = new Time();
 								worker0 = new Time();
 								worker1 = new Time();
 								break;
-			case VELOCITY:		//
+			case SPACING:		lastResult = new Time();
+								worker0 = new Time();
+								worker1 = new Time();
+								break;
+			case VELOCITY:		lastResult = new Velocity();
+								worker0 = new Velocity();
+								worker1 = new Velocity();
+								break;
+			case MICRO_ORG:		lastResult = new Organization(OrgMode.MICRO);
+								worker0 = new Organization(OrgMode.MICRO);
+								worker1 = new Organization(OrgMode.MICRO);
+								break;
+			case MACRO_ORG:		lastResult = new Organization(OrgMode.MACRO);
+								worker0 = new Organization(OrgMode.MACRO);
+								worker1 = new Organization(OrgMode.MACRO);
 								break;
 			default:			throw new IllegalArgumentException("TYPE ID NOT RECOGNIZED");
 		}

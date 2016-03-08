@@ -1,10 +1,13 @@
 package gernerators.properties;
 
+import java.util.Random;
+
 public class Velocity extends Property {
 	
 	public static final int MAX_VELOCITY = 127;
 	public static final int DEFAULT_VELOCITY = 96;
-	public static final int MIN_VELOCITY = 0;
+	public static final int MIN_VELOCITY = 36;
+	private Random r = new Random();
 	
 	public Velocity(){
 		this(DEFAULT_VELOCITY);
@@ -18,14 +21,17 @@ public class Velocity extends Property {
 
 	@Override
 	public void randomize() {
-		// TODO Auto-generated method stub
-
+		value = r.nextInt(MAX_VELOCITY - MIN_VELOCITY + 1) + MIN_VELOCITY;
 	}
 
 	@Override
 	public void setValueToClosest(int newValue) {
-		// TODO Auto-generated method stub
-
+		if(newValue < MIN_VELOCITY)
+			value = MIN_VELOCITY;
+		else if(newValue > MAX_VELOCITY)
+			value = MAX_VELOCITY;
+		else
+			value = newValue;
 	}
 
 }
