@@ -13,6 +13,10 @@ public class KarplusStrong implements Generator {
 	
 	public static final int DEFAULT_BUFFER_LENGTH = 10;
 	public static final int DEFAULT_THRESHOLD = 20;
+	public static final int MAX_BUFFER_SIZE = 30;
+	public static final int MAX_THRESHOLD = 70;
+	public static final int MIN_BUFFER_SIZE = 5;
+	public static final int MIN_THRESHOLD = 5;
 	
 	private int resetThreshold = 10;
 	private int counter = 0;

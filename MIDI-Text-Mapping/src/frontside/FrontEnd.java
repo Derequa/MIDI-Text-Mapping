@@ -30,6 +30,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import gernerators.FNoise;
+import gernerators.Generator.GeneratorType;
+import gernerators.KarplusStrong;
 import gernerators.properties.Property.PropertyType;
 
 public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
@@ -37,6 +39,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private static final long serialVersionUID = 4829661262223915297L;
 	
 	private Dimension consoleSize = new Dimension(320, 400);
+	private Dimension componentSize = new Dimension(330, 200);
 	
 	public static final int TEMPO_MAX = 330;
 	public static final int TEMPO_MIN = 30;
@@ -69,6 +72,8 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private String str_opt_markov = MARKOV + " Options";
 	private String str_opt_none = "No Options";
 	private String str_sub_opt_fnoise = "Number of Dice:";
+	private String str_sub_opt_karplus_buf = "Buffer Size:";
+	private String str_sub_opt_karplus_thres = "Reset Threshold:";
 	
 	private JSlider sld_tempo = new JSlider(JSlider.HORIZONTAL, TEMPO_MIN, TEMPO_MAX, TEMPO_DEFAULT);
 	private JSlider sld_opt_fnoise_macro = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
@@ -76,6 +81,16 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JSlider sld_opt_fnoise_dur = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
 	private JSlider sld_opt_fnoise_vel = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
 	private JSlider sld_opt_fnoise_spc = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
+	private JSlider sld_opt_karplus_buf_macro = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_BUFFER_SIZE, KarplusStrong.MAX_BUFFER_SIZE, KarplusStrong.DEFAULT_BUFFER_LENGTH);
+	private JSlider sld_opt_karplus_buf_micro = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_BUFFER_SIZE, KarplusStrong.MAX_BUFFER_SIZE, KarplusStrong.DEFAULT_BUFFER_LENGTH);
+	private JSlider sld_opt_karplus_buf_dur = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_BUFFER_SIZE, KarplusStrong.MAX_BUFFER_SIZE, KarplusStrong.DEFAULT_BUFFER_LENGTH);
+	private JSlider sld_opt_karplus_buf_vel = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_BUFFER_SIZE, KarplusStrong.MAX_BUFFER_SIZE, KarplusStrong.DEFAULT_BUFFER_LENGTH);
+	private JSlider sld_opt_karplus_buf_spc = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_BUFFER_SIZE, KarplusStrong.MAX_BUFFER_SIZE, KarplusStrong.DEFAULT_BUFFER_LENGTH);
+	private JSlider sld_opt_karplus_thres_macro = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_THRESHOLD, KarplusStrong.MAX_THRESHOLD, KarplusStrong.DEFAULT_THRESHOLD);
+	private JSlider sld_opt_karplus_thres_micro = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_THRESHOLD, KarplusStrong.MAX_THRESHOLD, KarplusStrong.DEFAULT_THRESHOLD);
+	private JSlider sld_opt_karplus_thres_dur = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_THRESHOLD, KarplusStrong.MAX_THRESHOLD, KarplusStrong.DEFAULT_THRESHOLD);
+	private JSlider sld_opt_karplus_thres_vel = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_THRESHOLD, KarplusStrong.MAX_THRESHOLD, KarplusStrong.DEFAULT_THRESHOLD);
+	private JSlider sld_opt_karplus_thres_spc = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_THRESHOLD, KarplusStrong.MAX_THRESHOLD, KarplusStrong.DEFAULT_THRESHOLD);
 	
 	private JComboBox<String> combo_org_macro = new JComboBox<String>(org_strings);
 	private JComboBox<String> combo_org_micro = new JComboBox<String>(org_strings);
@@ -98,6 +113,16 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JTextArea txt_opt_fnoise_dur = new JTextArea("" + sld_opt_fnoise_dur.getValue());
 	private JTextArea txt_opt_fnoise_vel = new JTextArea("" + sld_opt_fnoise_vel.getValue());
 	private JTextArea txt_opt_fnoise_spc = new JTextArea("" + sld_opt_fnoise_spc.getValue());
+	private JTextArea txt_opt_karplus_buf_macro = new JTextArea("" + sld_opt_karplus_buf_macro.getValue());
+	private JTextArea txt_opt_karplus_buf_micro = new JTextArea("" + sld_opt_karplus_buf_micro.getValue());
+	private JTextArea txt_opt_karplus_buf_dur = new JTextArea("" + sld_opt_karplus_buf_dur.getValue());
+	private JTextArea txt_opt_karplus_buf_vel = new JTextArea("" + sld_opt_karplus_buf_vel.getValue());
+	private JTextArea txt_opt_karplus_buf_spc = new JTextArea("" + sld_opt_karplus_buf_spc.getValue());
+	private JTextArea txt_opt_karplus_thres_macro = new JTextArea("" + sld_opt_karplus_thres_macro.getValue());
+	private JTextArea txt_opt_karplus_thres_micro = new JTextArea("" + sld_opt_karplus_thres_micro.getValue());
+	private JTextArea txt_opt_karplus_thres_dur = new JTextArea("" + sld_opt_karplus_thres_dur.getValue());
+	private JTextArea txt_opt_karplus_thres_vel = new JTextArea("" + sld_opt_karplus_thres_vel.getValue());
+	private JTextArea txt_opt_karplus_thres_spc = new JTextArea("" + sld_opt_karplus_thres_spc.getValue());
 	
 	private JLabel lbl_selected_file = new JLabel("Selected File:");
 	private JLabel lbl_selected_dir = new JLabel("Selected Directory:");
@@ -203,6 +228,16 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		sld_opt_fnoise_dur.addChangeListener(this);
 		sld_opt_fnoise_vel.addChangeListener(this);
 		sld_opt_fnoise_spc.addChangeListener(this);
+		sld_opt_karplus_buf_macro.addChangeListener(this);
+		sld_opt_karplus_buf_micro.addChangeListener(this);
+		sld_opt_karplus_buf_dur.addChangeListener(this);
+		sld_opt_karplus_buf_vel.addChangeListener(this);
+		sld_opt_karplus_buf_spc.addChangeListener(this);
+		sld_opt_karplus_thres_macro.addChangeListener(this);
+		sld_opt_karplus_thres_micro.addChangeListener(this);
+		sld_opt_karplus_thres_dur.addChangeListener(this);
+		sld_opt_karplus_thres_vel.addChangeListener(this);
+		sld_opt_karplus_thres_spc.addChangeListener(this);
 		
 		sld_tempo.setPaintTicks(true);
 		sld_tempo.setPaintLabels(true);
@@ -217,20 +252,48 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		txt_opt_fnoise_dur.setEditable(false);
 		txt_opt_fnoise_vel.setEditable(false);
 		txt_opt_fnoise_spc.setEditable(false);
+		txt_opt_karplus_buf_macro.setEditable(false);
+		txt_opt_karplus_buf_micro.setEditable(false);
+		txt_opt_karplus_buf_dur.setEditable(false);
+		txt_opt_karplus_buf_vel.setEditable(false);
+		txt_opt_karplus_buf_spc.setEditable(false);
+		txt_opt_karplus_thres_macro.setEditable(false);
+		txt_opt_karplus_thres_micro.setEditable(false);
+		txt_opt_karplus_thres_dur.setEditable(false);
+		txt_opt_karplus_thres_vel.setEditable(false);
+		txt_opt_karplus_thres_spc.setEditable(false);
 		
-		setpUpFNoiseSlider(sld_opt_fnoise_macro);
-		setpUpFNoiseSlider(sld_opt_fnoise_micro);
-		setpUpFNoiseSlider(sld_opt_fnoise_dur);
-		setpUpFNoiseSlider(sld_opt_fnoise_vel);
-		setpUpFNoiseSlider(sld_opt_fnoise_spc);
+		setupSlider(sld_opt_fnoise_macro, GeneratorType.FNOISE);
+		setupSlider(sld_opt_fnoise_micro, GeneratorType.FNOISE);
+		setupSlider(sld_opt_fnoise_dur, GeneratorType.FNOISE);
+		setupSlider(sld_opt_fnoise_vel, GeneratorType.FNOISE);
+		setupSlider(sld_opt_fnoise_spc, GeneratorType.FNOISE);
+		setupSlider(sld_opt_karplus_buf_macro, GeneratorType.KARPLUS);
+		setupSlider(sld_opt_karplus_buf_micro, GeneratorType.KARPLUS);
+		setupSlider(sld_opt_karplus_buf_dur, GeneratorType.KARPLUS);
+		setupSlider(sld_opt_karplus_buf_vel, GeneratorType.KARPLUS);
+		setupSlider(sld_opt_karplus_buf_spc, GeneratorType.KARPLUS);
+		setupSlider(sld_opt_karplus_thres_macro, GeneratorType.KARPLUS);
+		setupSlider(sld_opt_karplus_thres_micro, GeneratorType.KARPLUS);
+		setupSlider(sld_opt_karplus_thres_dur, GeneratorType.KARPLUS);
+		setupSlider(sld_opt_karplus_thres_vel, GeneratorType.KARPLUS);
+		setupSlider(sld_opt_karplus_thres_spc, GeneratorType.KARPLUS);
 	}
 	
-	private void setpUpFNoiseSlider(JSlider j){
+	private void setupSlider(JSlider j, GeneratorType mode){
 		j.setPaintLabels(true);
 		j.setPaintTicks(true);
-		j.setMajorTickSpacing(10);
-		j.setMinorTickSpacing(3);
+		switch(mode){
+			case FNOISE:		j.setMajorTickSpacing(10);
+								j.setMinorTickSpacing(3);
+								break;
+			case KARPLUS:		j.setMajorTickSpacing(15);
+								j.setMinorTickSpacing(5);
+								break;
+			default:			break;
+		}
 	}
+	
 	
 	private JPanel assembleFNoiseCard(PropertyType mode){
 		JPanel build = new JPanel(new GridLayout(0, 1));
@@ -255,13 +318,55 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 								break;
 		}
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_fnoise));
+		build.setPreferredSize(componentSize);
 		return build;
 	}
 	
 	private JPanel assembleKarplusCard(PropertyType mode){
-		JPanel build = new JPanel();
+		JPanel build = new JPanel(new GridLayout(0, 1));
+		JPanel slider1 = new JPanel(new GridLayout(1, 0));
+		JPanel slider2 = new JPanel(new GridLayout(1, 0));
+		slider1.add(new JLabel(str_sub_opt_karplus_thres));
+		slider2.add(new JLabel(str_sub_opt_karplus_buf));
+		switch(mode){
+			case MACRO_ORG:		slider1.add(txt_opt_karplus_thres_macro);
+								slider2.add(txt_opt_karplus_buf_macro);
+								build.add(slider1);
+								build.add(sld_opt_karplus_thres_macro);
+								build.add(slider2);
+								build.add(sld_opt_karplus_buf_macro);
+								break;
+			case MICRO_ORG:		slider1.add(txt_opt_karplus_thres_micro);
+								slider2.add(txt_opt_karplus_buf_micro);
+								build.add(slider1);
+								build.add(sld_opt_karplus_thres_micro);
+								build.add(slider2);
+								build.add(sld_opt_karplus_buf_micro);
+								break;
+			case DURATION:		slider1.add(txt_opt_karplus_thres_dur);
+								slider2.add(txt_opt_karplus_buf_dur);
+								build.add(slider1);
+								build.add(sld_opt_karplus_thres_dur);
+								build.add(slider2);
+								build.add(sld_opt_karplus_buf_dur);
+								break;
+			case VELOCITY:		slider1.add(txt_opt_karplus_thres_vel);
+								slider2.add(txt_opt_karplus_buf_vel);
+								build.add(slider1);
+								build.add(sld_opt_karplus_thres_vel);
+								build.add(slider2);
+								build.add(sld_opt_karplus_buf_vel);
+								break;
+			case SPACING:		slider1.add(txt_opt_karplus_thres_spc);
+								slider2.add(txt_opt_karplus_buf_spc);
+								build.add(slider1);
+								build.add(sld_opt_karplus_thres_spc);
+								build.add(slider2);
+								build.add(sld_opt_karplus_buf_spc);
+								break;
+		}
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_karplus));
-		build.add(new JTextArea("KARPLUS OPTIONS IN PROGRESS..."));
+		build.setPreferredSize(componentSize);
 		return build;
 	}
 
@@ -347,6 +452,26 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 			txt_opt_fnoise_vel.setText("" + sld_opt_fnoise_vel.getValue());
 		else if(e.getSource().equals(sld_opt_fnoise_spc))
 			txt_opt_fnoise_spc.setText("" + sld_opt_fnoise_spc.getValue());
+		else if(e.getSource().equals(sld_opt_karplus_buf_macro))
+			txt_opt_karplus_buf_macro.setText("" + sld_opt_karplus_buf_macro.getValue());
+		else if(e.getSource().equals(sld_opt_karplus_buf_micro))
+			txt_opt_karplus_buf_micro.setText("" + sld_opt_karplus_buf_micro.getValue());
+		else if(e.getSource().equals(sld_opt_karplus_buf_dur))
+			txt_opt_karplus_buf_dur.setText("" + sld_opt_karplus_buf_dur.getValue());
+		else if(e.getSource().equals(sld_opt_karplus_buf_vel))
+			txt_opt_karplus_buf_vel.setText("" + sld_opt_karplus_buf_vel.getValue());
+		else if(e.getSource().equals(sld_opt_karplus_buf_spc))
+			txt_opt_karplus_buf_spc.setText("" + sld_opt_karplus_buf_spc.getValue());
+		else if(e.getSource().equals(sld_opt_karplus_thres_macro))
+			txt_opt_karplus_thres_macro.setText("" + sld_opt_karplus_thres_macro.getValue());
+		else if(e.getSource().equals(sld_opt_karplus_thres_micro))
+			txt_opt_karplus_thres_micro.setText("" + sld_opt_karplus_thres_micro.getValue());
+		else if(e.getSource().equals(sld_opt_karplus_thres_dur))
+			txt_opt_karplus_thres_dur.setText("" + sld_opt_karplus_thres_dur.getValue());
+		else if(e.getSource().equals(sld_opt_karplus_thres_vel))
+			txt_opt_karplus_thres_vel.setText("" + sld_opt_karplus_thres_vel.getValue());
+		else if(e.getSource().equals(sld_opt_karplus_thres_spc))
+			txt_opt_karplus_thres_spc.setText("" + sld_opt_karplus_thres_spc.getValue());
 	}
 
 }
