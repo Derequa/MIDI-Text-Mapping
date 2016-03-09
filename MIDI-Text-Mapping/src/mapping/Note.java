@@ -1,4 +1,4 @@
-package music;
+package mapping;
 
 /**
  * This class wraps and abstracts a MIDI note for

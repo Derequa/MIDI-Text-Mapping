@@ -5,7 +5,7 @@ import java.util.Random;
 public class Time extends Property implements Comparable<Property> {
 	
 	public static final int NO_TICK = 0;
-	public static final int TICKS_PER_QUARTER = music.MidiFile.TICKS_PER_BEAT;
+	public static final int TICKS_PER_QUARTER = mapping.MidiFile.TICKS_PER_BEAT;
 	public static final int TICKS_PER_HALF = 2 * TICKS_PER_QUARTER;
 	public static final int TICKS_PER_WHOLE = 2 * TICKS_PER_HALF;
 	public static final int TICKS_PER_EIGTH = TICKS_PER_QUARTER / 2;

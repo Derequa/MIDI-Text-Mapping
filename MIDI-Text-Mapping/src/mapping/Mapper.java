@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Scanner;
 
+import frontside.Tester;
 import gernerators.FNoise;
 import gernerators.Generator;
 import gernerators.Generator.GeneratorType;
@@ -18,9 +19,6 @@ import gernerators.Markov;
 import gernerators.TriangularDist;
 import gernerators.properties.Property.PropertyType;
 import gernerators.properties.Velocity;
-import music.MidiFile;
-import music.Note;
-import music.Tester;
 
 public class Mapper {
 	
@@ -87,8 +85,8 @@ public class Mapper {
 				duration.step();
 			}
 		} catch (IOException e){
-			if(Tester.debug)
-				System.out.println("DONE READING FILE");
+			if(Settings.DEBUG)
+				Settings.console.println("DONE READING FILE");
 		}
 	}
 	
@@ -109,8 +107,8 @@ public class Mapper {
 	
 	public void writeToFile(String filename){
 		MidiFile mFile = new MidiFile(filename);
-		if(Tester.debug)
-			System.out.println(mappedNotes);
+		if(Settings.DEBUG)
+			Settings.console.println(mappedNotes);
 		for(Note n : mappedNotes)
 			mFile.playNote(n);
 		mFile.finish();
