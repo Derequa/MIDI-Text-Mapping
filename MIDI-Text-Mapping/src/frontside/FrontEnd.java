@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -18,14 +19,20 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
-public class FrontEnd extends JFrame implements ActionListener {
+import gernerators.FNoise;
+import gernerators.properties.Property.PropertyType;
+
+public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 
 	private static final long serialVersionUID = 4829661262223915297L;
 	
@@ -46,7 +53,7 @@ public class FrontEnd extends JFrame implements ActionListener {
 	private String[] org_strings = {FNOISE, KARPLUS, TRIANGULAR, MARKOV, NONE};
 	private String[] std_strings = {FNOISE, KARPLUS, TRIANGULAR, MARKOV};
 	
-	private String str_options = "Actions";
+	private String str_options = "File Input";
 	private String str_console = "Console Output";
 	private String str_org_macro = "Compositional Method (High-level)";
 	private String str_org_micro = "Compositional Method (Low-level)";
@@ -61,8 +68,14 @@ public class FrontEnd extends JFrame implements ActionListener {
 	private String str_opt_triangular = TRIANGULAR + " Options";
 	private String str_opt_markov = MARKOV + " Options";
 	private String str_opt_none = "No Options";
+	private String str_sub_opt_fnoise = "Number of Dice:";
 	
 	private JSlider sld_tempo = new JSlider(JSlider.HORIZONTAL, TEMPO_MIN, TEMPO_MAX, TEMPO_DEFAULT);
+	private JSlider sld_opt_fnoise_macro = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
+	private JSlider sld_opt_fnoise_micro = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
+	private JSlider sld_opt_fnoise_dur = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
+	private JSlider sld_opt_fnoise_vel = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
+	private JSlider sld_opt_fnoise_spc = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
 	
 	private JComboBox<String> combo_org_macro = new JComboBox<String>(org_strings);
 	private JComboBox<String> combo_org_micro = new JComboBox<String>(org_strings);
@@ -76,9 +89,15 @@ public class FrontEnd extends JFrame implements ActionListener {
 	private JButton btn_generate = new JButton("Generate!");
 	
 	protected JTextArea gui_console = new JTextArea(50, 50);
-	private JTextArea selected_file = new JTextArea(str_nosel_file);
-	private JTextArea selected_dir = new JTextArea(str_nosel_dir);
-	private JTextArea selected_map = new JTextArea(str_nosel_map);
+	private JTextArea txt_selected_file = new JTextArea(str_nosel_file);
+	private JTextArea txt_selected_dir = new JTextArea(str_nosel_dir);
+	private JTextArea txt_selected_map = new JTextArea(str_nosel_map);
+	private JTextArea txt_current_tempo = new JTextArea("" + sld_tempo.getValue());
+	private JTextArea txt_opt_fnoise_macro = new JTextArea("" + sld_opt_fnoise_macro.getValue());
+	private JTextArea txt_opt_fnoise_micro = new JTextArea("" + sld_opt_fnoise_micro.getValue());
+	private JTextArea txt_opt_fnoise_dur = new JTextArea("" + sld_opt_fnoise_dur.getValue());
+	private JTextArea txt_opt_fnoise_vel = new JTextArea("" + sld_opt_fnoise_vel.getValue());
+	private JTextArea txt_opt_fnoise_spc = new JTextArea("" + sld_opt_fnoise_spc.getValue());
 	
 	private JLabel lbl_selected_file = new JLabel("Selected File:");
 	private JLabel lbl_selected_dir = new JLabel("Selected Directory:");
@@ -93,6 +112,9 @@ public class FrontEnd extends JFrame implements ActionListener {
 	private JPanel pnl_cards_spc = new JPanel(new CardLayout());
 	private JPanel pnl_options = new JPanel(new GridLayout(3, 0));
 	private JPanel pnl_console = new JPanel();
+	
+	private File toMap;
+	private File mappingScheme;
 
 	public FrontEnd(){
 		setupPanels();
@@ -108,33 +130,33 @@ public class FrontEnd extends JFrame implements ActionListener {
 		Container c = this.getContentPane();
 		c.setLayout(new BorderLayout());
 		
-		selected_file.setEditable(false);
-		selected_dir.setEditable(false);
 		pnl_options.add(btn_select_file);
 		pnl_options.add(lbl_selected_file);
-		pnl_options.add(selected_file);
+		pnl_options.add(txt_selected_file);
 		pnl_options.add(btn_select_dir);
 		pnl_options.add(lbl_selected_dir);
-		pnl_options.add(selected_dir);
+		pnl_options.add(txt_selected_dir);
 		pnl_options.add(btn_select_mapper);
 		pnl_options.add(lbl_selected_map);
-		pnl_options.add(selected_map);
+		pnl_options.add(txt_selected_map);
 		pnl_options.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_options));
 		c.add(pnl_options, BorderLayout.NORTH);
 		
 		JPanel genAndTemp = new JPanel(new GridLayout(0, 1));
 		JPanel tempoPanel = new JPanel(new GridLayout(0, 1));
+		
 		tempoPanel.add(lbl_tempo);
-		tempoPanel.add(sld_tempo);
+		tempoPanel.add(txt_current_tempo);
 		genAndTemp.add(tempoPanel);
+		genAndTemp.add(sld_tempo);
 		genAndTemp.add(btn_generate);
 		
 		JPanel combos = new JPanel(new GridLayout(0, 3));
-		combos.add(setupCards(pnl_cards_org_macro, combo_org_macro, str_org_macro));
-		combos.add(setupCards(pnl_cards_org_micro, combo_org_micro, str_org_micro));
-		combos.add(setupCards(pnl_cards_dur, combo_dur, str_dur));
-		combos.add(setupCards(pnl_cards_vel, combo_vel, str_vel));
-		combos.add(setupCards(pnl_cards_spc, combo_spc, str_spc));
+		combos.add(setupCards(pnl_cards_org_macro, combo_org_macro, str_org_macro, PropertyType.MACRO_ORG));
+		combos.add(setupCards(pnl_cards_org_micro, combo_org_micro, str_org_micro, PropertyType.MICRO_ORG));
+		combos.add(setupCards(pnl_cards_dur, combo_dur, str_dur, PropertyType.DURATION));
+		combos.add(setupCards(pnl_cards_vel, combo_vel, str_vel, PropertyType.VELOCITY));
+		combos.add(setupCards(pnl_cards_spc, combo_spc, str_spc, PropertyType.SPACING));
 		combos.add(genAndTemp);
 		c.add(combos, BorderLayout.CENTER);
 		
@@ -149,15 +171,15 @@ public class FrontEnd extends JFrame implements ActionListener {
 		c.add(pnl_console, BorderLayout.WEST);
 	}
 	
-	private JPanel setupCards(JPanel cardPanel, JComboBox comboBox, String borderTitle){
+	private JPanel setupCards(JPanel cardPanel, JComboBox<String> comboBox, String borderTitle, PropertyType mode){
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.add(comboBox, BorderLayout.NORTH);
 		panel.add(cardPanel, BorderLayout.CENTER);
 		comboBox.setSelectedIndex(0);
-		cardPanel.add(assembleFNoiseCard(), FNOISE);
-		cardPanel.add(assembleKarplusCard(), KARPLUS);
-		cardPanel.add(assembleTriangularCard(), TRIANGULAR);
-		cardPanel.add(assembleMarkovCard(), MARKOV);
+		cardPanel.add(assembleFNoiseCard(mode), FNOISE);
+		cardPanel.add(assembleKarplusCard(mode), KARPLUS);
+		cardPanel.add(assembleTriangularCard(mode), TRIANGULAR);
+		cardPanel.add(assembleMarkovCard(mode), MARKOV);
 		cardPanel.add(assembleNoneCard(), NONE);
 		CardLayout layout = (CardLayout) cardPanel.getLayout();
 		layout.show(cardPanel, (String) comboBox.getSelectedItem());
@@ -175,30 +197,82 @@ public class FrontEnd extends JFrame implements ActionListener {
 		combo_dur.addActionListener(this);
 		combo_vel.addActionListener(this);
 		combo_spc.addActionListener(this);
+		sld_tempo.addChangeListener(this);
+		sld_opt_fnoise_macro.addChangeListener(this);
+		sld_opt_fnoise_micro.addChangeListener(this);
+		sld_opt_fnoise_dur.addChangeListener(this);
+		sld_opt_fnoise_vel.addChangeListener(this);
+		sld_opt_fnoise_spc.addChangeListener(this);
+		
+		sld_tempo.setPaintTicks(true);
+		sld_tempo.setPaintLabels(true);
+		sld_tempo.setMajorTickSpacing(50);
+		sld_tempo.setMinorTickSpacing(10);
+		txt_current_tempo.setEditable(false);
+		txt_selected_file.setEditable(false);
+		txt_selected_dir.setEditable(false);
+		txt_selected_map.setEditable(false);
+		txt_opt_fnoise_macro.setEditable(false);
+		txt_opt_fnoise_micro.setEditable(false);
+		txt_opt_fnoise_dur.setEditable(false);
+		txt_opt_fnoise_vel.setEditable(false);
+		txt_opt_fnoise_spc.setEditable(false);
+		
+		setpUpFNoiseSlider(sld_opt_fnoise_macro);
+		setpUpFNoiseSlider(sld_opt_fnoise_micro);
+		setpUpFNoiseSlider(sld_opt_fnoise_dur);
+		setpUpFNoiseSlider(sld_opt_fnoise_vel);
+		setpUpFNoiseSlider(sld_opt_fnoise_spc);
 	}
 	
-	private JPanel assembleFNoiseCard(){
-		JPanel build = new JPanel();
+	private void setpUpFNoiseSlider(JSlider j){
+		j.setPaintLabels(true);
+		j.setPaintTicks(true);
+		j.setMajorTickSpacing(10);
+		j.setMinorTickSpacing(3);
+	}
+	
+	private JPanel assembleFNoiseCard(PropertyType mode){
+		JPanel build = new JPanel(new GridLayout(0, 1));
+		JPanel info = new JPanel(new GridLayout(1, 0));
+		info.add(new JLabel(str_sub_opt_fnoise));
+		build.add(info);
+		switch(mode){
+			case MACRO_ORG:		info.add(txt_opt_fnoise_macro);
+								build.add(sld_opt_fnoise_macro);
+								break;
+			case MICRO_ORG:		info.add(txt_opt_fnoise_micro);
+								build.add(sld_opt_fnoise_micro);
+								break;
+			case DURATION:		info.add(txt_opt_fnoise_dur);
+								build.add(sld_opt_fnoise_dur);
+								break;
+			case VELOCITY:		info.add(txt_opt_fnoise_vel);
+								build.add(sld_opt_fnoise_vel);
+								break;
+			case SPACING:		info.add(txt_opt_fnoise_spc);
+								build.add(sld_opt_fnoise_spc);
+								break;
+		}
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_fnoise));
-		build.add(new JTextArea("FNOISE OPTIONS IN PROGRESS..."));
 		return build;
 	}
 	
-	private JPanel assembleKarplusCard(){
+	private JPanel assembleKarplusCard(PropertyType mode){
 		JPanel build = new JPanel();
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_karplus));
 		build.add(new JTextArea("KARPLUS OPTIONS IN PROGRESS..."));
 		return build;
 	}
 
-	private JPanel assembleTriangularCard(){
+	private JPanel assembleTriangularCard(PropertyType mode){
 		JPanel build = new JPanel();
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_triangular));
 		build.add(new JTextArea("TRIANGULAR OPTIONS IN PROGRESS..."));
 		return build;
 	}
 	
-	private JPanel assembleMarkovCard(){
+	private JPanel assembleMarkovCard(PropertyType mode){
 		JPanel build = new JPanel();
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_markov));
 		build.add(new JTextArea("MARKOV OPTIONS IN PROGRESS..."));
@@ -210,6 +284,16 @@ public class FrontEnd extends JFrame implements ActionListener {
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_none));
 		build.add(new JTextArea("NONE OPTIONS IN PROGRESS..."));
 		return build;
+	}
+	
+	private File selectFile(int mode){
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setFileSelectionMode(mode);
+		int ret = fileChooser.showOpenDialog(this);
+		if(ret == JFileChooser.APPROVE_OPTION)
+			return fileChooser.getSelectedFile();
+		else 
+			return null;
 	}
 	
 	@Override
@@ -224,6 +308,45 @@ public class FrontEnd extends JFrame implements ActionListener {
 			((CardLayout) pnl_cards_vel.getLayout()).show(pnl_cards_vel, (String) combo_vel.getSelectedItem());
 		else if(e.getSource().equals(combo_spc))
 			((CardLayout) pnl_cards_spc.getLayout()).show(pnl_cards_spc, (String) combo_spc.getSelectedItem());
+		else if(e.getSource().equals(btn_select_file)){
+			File f = selectFile(JFileChooser.FILES_ONLY);
+			if(f != null){
+				toMap = f;
+				txt_selected_file.setText(f.getName());
+				txt_selected_dir.setText(str_nosel_dir);
+			}
+		}
+		else if(e.getSource().equals(btn_select_dir)){
+			File f = selectFile(JFileChooser.DIRECTORIES_ONLY);
+			if(f != null){
+				toMap = f;
+				txt_selected_file.setText(str_nosel_file);
+				txt_selected_dir.setText(f.getName());
+			}
+		}
+		else if(e.getSource().equals(btn_select_mapper)){
+			File f = selectFile(JFileChooser.FILES_ONLY);
+			if(f != null){
+				mappingScheme = f;
+				txt_selected_map.setText(f.getName());
+			}
+		}
+	}
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		if(e.getSource().equals(sld_tempo))
+			txt_current_tempo.setText("" + sld_tempo.getValue());
+		else if(e.getSource().equals(sld_opt_fnoise_macro))
+			txt_opt_fnoise_macro.setText("" + sld_opt_fnoise_macro.getValue());
+		else if(e.getSource().equals(sld_opt_fnoise_micro))
+			txt_opt_fnoise_micro.setText("" + sld_opt_fnoise_micro.getValue());
+		else if(e.getSource().equals(sld_opt_fnoise_dur))
+			txt_opt_fnoise_dur.setText("" + sld_opt_fnoise_dur.getValue());
+		else if(e.getSource().equals(sld_opt_fnoise_vel))
+			txt_opt_fnoise_vel.setText("" + sld_opt_fnoise_vel.getValue());
+		else if(e.getSource().equals(sld_opt_fnoise_spc))
+			txt_opt_fnoise_spc.setText("" + sld_opt_fnoise_spc.getValue());
 	}
 
 }

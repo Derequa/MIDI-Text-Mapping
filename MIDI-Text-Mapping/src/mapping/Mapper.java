@@ -41,20 +41,44 @@ public class Mapper {
 								  + "65 - 127 67\n";
 	
 	public Mapper(File scheme, GeneratorType spacing, GeneratorType velocity, GeneratorType duration, GeneratorType microOrg, GeneratorType macroOrg){
-		try{
-			if(scheme == null)
-				importMappingScheme(new Scanner(defaultMapping));
-			else
-				importMappingScheme(new Scanner(scheme));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		importMappingScheme(scheme);
 		switchSpacing(spacing);
 		switchVelocity(velocity);
 		switchDuration(duration);
 		switchMicroOrg(microOrg);
 		switchMacroOrg(macroOrg);
 	}
+	
+	public Mapper(File scheme, Generator spacing, Generator velocity, Generator duration, Generator microOrg, Generator macroOrg){
+		importMappingScheme(scheme);
+		switchSpacing(spacing);
+		switchVelocity(velocity);
+		switchDuration(duration);
+		switchMicroOrg(microOrg);
+		switchMacroOrg(macroOrg);
+	}
+	
+	public Mapper(GeneratorType spacing, GeneratorType velocity, GeneratorType duration, GeneratorType microOrg, GeneratorType macroOrg){
+		switchSpacing(spacing);
+		switchVelocity(velocity);
+		switchDuration(duration);
+		switchMicroOrg(microOrg);
+		switchMacroOrg(macroOrg);
+	}
+	
+	public Mapper(Generator spacing, Generator velocity, Generator duration, Generator microOrg, Generator macroOrg){
+		switchSpacing(spacing);
+		switchVelocity(velocity);
+		switchDuration(duration);
+		switchMicroOrg(microOrg);
+		switchMacroOrg(macroOrg);
+	}
+	
+	public Mapper(File scheme){
+		importMappingScheme(scheme);
+	}
+	
+	public Mapper(){}
 	
 	public void mapFile(File f){
 		if(f == null)
@@ -114,7 +138,18 @@ public class Mapper {
 		mFile.finish();
 	}
 	
-	public void importMappingScheme(Scanner s) throws Exception{
+	public void importMappingScheme(File f){
+		try{
+			if(f == null)
+				importMappingScheme(new Scanner(defaultMapping));
+			else
+				importMappingScheme(new Scanner(f));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void importMappingScheme(Scanner s) throws Exception{
 		mappingScheme.clear();
 		while(s.hasNextLine()){
 			Scanner lineScanner = new Scanner(s.nextLine());

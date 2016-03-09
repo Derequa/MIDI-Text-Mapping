@@ -10,7 +10,8 @@ import gernerators.properties.Velocity;
 public class FNoise implements Generator {
 	
 	public static final int DEFAULT_DICE = 4;
-	private static final int MAX_DICE = 32;
+	public static final int MAX_DICE = 32;
+	public static final int MIN_DICE = 2;
 	private Property result = null;
 	private int counter = 0;
 	private Property[] diceValues;
