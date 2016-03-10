@@ -2,6 +2,8 @@ package mapping;
 
 
 import java.io.*;
+import java.nio.ByteBuffer;
+
 import javax.sound.midi.*; // package for all midi classes
 
 /**
@@ -18,17 +20,19 @@ import javax.sound.midi.*; // package for all midi classes
  */
 public class MidiFile {
 	
-	public static final int TICKS_PER_BEAT = 24;
+	public static final int TICKS_PER_BEAT = 96;
 	
 	private Track t0;
 	private Sequence s;
 	private String filename;
+	private int tempo;
 	
 	public MidiFile(){
-		this("output.mid");
+		this("output.mid", Settings.TEMPO_DEFAULT);
 	}
 	
-	public MidiFile(String filename){
+	public MidiFile(String filename, int tempo){
+		this.tempo = tempo;
 		if(filename == null)
 			this.filename = "output.mid";
 		else
@@ -53,7 +57,12 @@ public class MidiFile {
 	
 			// set tempo (meta event)
 			MetaMessage mt = new MetaMessage();
-	        byte[] bt = {0x02, (byte)0x00, 0x00};
+			int micros = 60000 / (TICKS_PER_BEAT * tempo);
+			byte byte0 = (byte) (micros & 0x000000FF);
+			byte byte1 = (byte) (micros>>8 & 0x000000FF);
+			byte byte2 = (byte) (micros>>16 & 0x000000FF);
+			byte[] bt = {byte0, byte1, byte2};
+			//byte[] bt = {0x02, (byte)0x00, 0x00};
 			mt.setMessage(0x51 ,bt, 3);
 			me = new MidiEvent(mt,(long)0);
 			t0.add(me);

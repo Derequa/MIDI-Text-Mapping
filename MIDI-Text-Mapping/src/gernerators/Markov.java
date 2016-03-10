@@ -1,10 +1,12 @@
 package gernerators;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 
 import gernerators.properties.Property;
+import gernerators.properties.Property.PropertyType;
 
 public class Markov implements Generator {
 	
@@ -12,6 +14,14 @@ public class Markov implements Generator {
 	private Property currentState;
 	private HashMap<Property, HashMap<Property, Float>> transitionTable = new HashMap<Property, HashMap<Property, Float>>();
 	private Random r = new Random();
+	
+	public Markov(PropertyType mode){
+		// TODO stuff
+	}
+	
+	public Markov(File scheme, PropertyType mode){
+		// TODO Import file
+	}
 	
 	public int getNumberOfStates(){
 		return transitionTable.keySet().size();

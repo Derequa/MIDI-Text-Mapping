@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.io.PrintStream;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,9 +36,15 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import gernerators.FNoise;
+import gernerators.Generator;
 import gernerators.Generator.GeneratorType;
 import gernerators.KarplusStrong;
+import gernerators.Markov;
+import gernerators.TriangularDist;
+import gernerators.TriangularDist.DistributionScheme;
 import gernerators.properties.Property.PropertyType;
+import mapping.Mapper;
+import mapping.Settings;
 
 public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 
@@ -45,10 +52,6 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	
 	private Dimension consoleSize = new Dimension(320, 460);
 	private Dimension componentSize = new Dimension(330, 200);
-	
-	public static final int TEMPO_MAX = 330;
-	public static final int TEMPO_MIN = 30;
-	public static final int TEMPO_DEFAULT = 130;
 	
 	private final String TITLE = "MIDI File Mapper";
 
@@ -88,7 +91,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private String str_sub_opt_markov_gen = "Generate Undefined Transitions?";
 	private String str_nosel_output = "output.mid";
 	
-	private JSlider sld_tempo = new JSlider(JSlider.HORIZONTAL, TEMPO_MIN, TEMPO_MAX, TEMPO_DEFAULT);
+	private JSlider sld_tempo = new JSlider(JSlider.HORIZONTAL, Settings.TEMPO_MIN, Settings.TEMPO_MAX, Settings.TEMPO_DEFAULT);
 	private JSlider sld_opt_fnoise_macro = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
 	private JSlider sld_opt_fnoise_micro = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
 	private JSlider sld_opt_fnoise_dur = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
@@ -207,7 +210,6 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private File markov_map_dur;
 	private File markov_map_vel;
 	private File markov_map_spc;
-	private float maxLength = -1;
 
 	public FrontEnd(){
 		setupPanels();
@@ -662,8 +664,125 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 			setSelectedButtonSet(btn_opt_triangular_norm_spc, btn_opt_triangular_left_spc, btn_opt_triangular_right_spc);
 		else if(e.getSource().equals(btn_opt_triangular_right_spc))
 			setSelectedButtonSet(btn_opt_triangular_right_spc, btn_opt_triangular_left_spc, btn_opt_triangular_norm_spc);
-		else if(e.getSource().equals(btn_generate)){
+		else if(e.getSource().equals(btn_generate) && btn_generate.isEnabled())
+			runMapper();
+	}
+	
+	private void runMapper(){
+		Settings s = new Settings();
+		s.console = new PrintStream(new JTextOutputStream(gui_console));
+		s.setFileToMap(toMap);
+		s.mappingScheme = mappingScheme;
+		if(outputFile != null)
+			s.outputFile = outputFile;
+		else
+			s.outputFile = new File(str_nosel_output);
+		s.setTempo(sld_tempo.getValue());
+		float length = -1;
+		try {
+			length = Float.parseFloat(txt_max_length.getText());
+		} catch (Exception e) {
+			s.console.println("STATUS: UNABLE TO READ MAX LENGTH");
+		}
+		s.setLength(length);
+		s.setMacroOrg(makeGenerator(combo_org_macro, PropertyType.MACRO_ORG));
+		s.setMicroOrg(makeGenerator(combo_org_micro, PropertyType.MICRO_ORG));
+		s.setDuration(makeGenerator(combo_dur, PropertyType.DURATION));
+		s.setVelocity(makeGenerator(combo_vel, PropertyType.VELOCITY));
+		s.setSpacing(makeGenerator(combo_spc, PropertyType.SPACING));
+		Mapper m = new Mapper(s);
+		m.importMappingScheme();
+		m.mapSetFile();
+		m.organize();
+		m.writeToFile();
+	}
+	
+	private Generator makeGenerator(JComboBox<String> box, PropertyType mode){
+		switch((String) box.getSelectedItem()){
+			case FNOISE:		return makeFNoiseGenerator(mode);
+			case KARPLUS:		return makeKarplusGenerator(mode);
+			case TRIANGULAR:	return makeTriangularGenerator(mode);
+			case MARKOV:		return makeMarkovGenerator(mode);
+			default: 			return null;
+		}
+	}
+	
+	private FNoise makeFNoiseGenerator(PropertyType mode){
+		switch(mode){
+			case MACRO_ORG:		return new FNoise(sld_opt_fnoise_macro.getValue(), mode);
+			case MICRO_ORG:		return new FNoise(sld_opt_fnoise_micro.getValue(), mode);
+			case DURATION:		return new FNoise(sld_opt_fnoise_dur.getValue(), mode);
+			case VELOCITY:		return new FNoise(sld_opt_fnoise_vel.getValue(), mode);
+			case SPACING:		return new FNoise(sld_opt_fnoise_spc.getValue(), mode);
+			default:			return null;
+		}
+	}
+	
+	private KarplusStrong makeKarplusGenerator(PropertyType mode){
+		switch(mode){
+			case MACRO_ORG:		return new KarplusStrong(sld_opt_karplus_buf_macro.getValue(), sld_opt_karplus_thres_macro.getValue(), mode);
+			case MICRO_ORG:		return new KarplusStrong(sld_opt_karplus_buf_micro.getValue(), sld_opt_karplus_thres_micro.getValue(), mode);
+			case DURATION:		return new KarplusStrong(sld_opt_karplus_buf_dur.getValue(), sld_opt_karplus_thres_dur.getValue(), mode);
+			case VELOCITY:		return new KarplusStrong(sld_opt_karplus_buf_vel.getValue(), sld_opt_karplus_thres_vel.getValue(), mode);
+			case SPACING:		return new KarplusStrong(sld_opt_karplus_buf_spc.getValue(), sld_opt_karplus_thres_spc.getValue(), mode);
+			default:			return null;
+		}
+	}
+	
+	private TriangularDist makeTriangularGenerator(PropertyType mode){
+		DistributionScheme scheme = null;
+		switch(mode){
+			case MACRO_ORG:		if(btn_opt_triangular_left_macro.isSelected())
+									scheme =  DistributionScheme.LEFT_SLANT;
+								else if(this.btn_opt_triangular_norm_macro.isSelected())
+									scheme =  DistributionScheme.NORMAL;
+								else
+									scheme =  DistributionScheme.RIGHT_SLANT;
+								break;
+	
+			case MICRO_ORG:		if(btn_opt_triangular_left_micro.isSelected())
+									scheme =  DistributionScheme.LEFT_SLANT;
+								else if(this.btn_opt_triangular_norm_micro.isSelected())
+									scheme =  DistributionScheme.NORMAL;
+								else
+									scheme =  DistributionScheme.RIGHT_SLANT;
+								break;
+	
+			case DURATION:		if(btn_opt_triangular_left_dur.isSelected())
+									scheme =  DistributionScheme.LEFT_SLANT;
+								else if(this.btn_opt_triangular_norm_dur.isSelected())
+									scheme =  DistributionScheme.NORMAL;
+								else
+									scheme =  DistributionScheme.RIGHT_SLANT;
+								break;
 			
+			case VELOCITY:		if(btn_opt_triangular_left_vel.isSelected())
+									scheme =  DistributionScheme.LEFT_SLANT;
+								else if(this.btn_opt_triangular_norm_vel.isSelected())
+									scheme =  DistributionScheme.NORMAL;
+								else
+									scheme =  DistributionScheme.RIGHT_SLANT;
+								break;
+	
+			case SPACING:		if(btn_opt_triangular_left_macro.isSelected())
+									scheme =  DistributionScheme.LEFT_SLANT;
+								else if(this.btn_opt_triangular_norm_macro.isSelected())
+									scheme =  DistributionScheme.NORMAL;
+								else
+									scheme =  DistributionScheme.RIGHT_SLANT;
+								break;
+		}
+		return new TriangularDist(scheme, mode);
+	}
+	
+	private Markov makeMarkovGenerator(PropertyType mode){
+		switch(mode){
+			case MACRO_ORG:		return new Markov(markov_map_macro, mode);
+			case MICRO_ORG:		return new Markov(markov_map_micro, mode);
+			case DURATION:		return new Markov(markov_map_dur, mode);
+			case VELOCITY:		return new Markov(markov_map_vel, mode);
+			case SPACING:		return new Markov(markov_map_spc, mode);
+			default:			return null;
 		}
 	}
 	
@@ -709,4 +828,8 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 			lbl_opt_karplus_thres_spc.setText("" + sld_opt_karplus_thres_spc.getValue());
 	}
 
+	
+	public static void main(String[] args){
+		FrontEnd f = new FrontEnd();
+	}
 }

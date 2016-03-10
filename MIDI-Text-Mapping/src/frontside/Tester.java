@@ -15,12 +15,7 @@ import mapping.Settings;
 public class Tester {
 	
 	public static void main(String[] args){
-		FrontEnd d =  new FrontEnd();
-		Settings.console = new PrintStream(new JTextOutputStream(d.gui_console));
-		Mapper m = new Mapper(null, GeneratorType.KARPLUS, GeneratorType.KARPLUS, GeneratorType.FNOISE, GeneratorType.TRIANGULAR, GeneratorType.FNOISE);
-		m.mapFile(new File("default.txt"));
-		m.organize();
-		m.writeToFile(null);
+		
 	}
 	
 	/**

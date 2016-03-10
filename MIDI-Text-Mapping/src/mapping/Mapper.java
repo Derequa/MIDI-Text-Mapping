@@ -27,11 +27,7 @@ public class Mapper {
 	private LinkedList<Note> mappedNotes = new LinkedList<Note>();
 	private HashMap<Integer, LinkedList<Integer>> mappingScheme = new HashMap<Integer, LinkedList<Integer>>();
 	
-	private Generator spacing;
-	private Generator velocity;
-	private Generator duration;
-	private Generator microOrg;
-	private Generator macroOrg;
+	public Settings settings = new Settings();
 	
 	private String defaultMapping = "0 - 64 50\n"
 								  + "0 - 64 67\n"
@@ -40,47 +36,17 @@ public class Mapper {
 								  + "65 - 127 64\n"
 								  + "65 - 127 67\n";
 	
-	public Mapper(File scheme, GeneratorType spacing, GeneratorType velocity, GeneratorType duration, GeneratorType microOrg, GeneratorType macroOrg){
-		importMappingScheme(scheme);
-		switchSpacing(spacing);
-		switchVelocity(velocity);
-		switchDuration(duration);
-		switchMicroOrg(microOrg);
-		switchMacroOrg(macroOrg);
+	public Mapper(Settings s) {
+		settings = s;
 	}
 	
-	public Mapper(File scheme, Generator spacing, Generator velocity, Generator duration, Generator microOrg, Generator macroOrg){
-		importMappingScheme(scheme);
-		switchSpacing(spacing);
-		switchVelocity(velocity);
-		switchDuration(duration);
-		switchMicroOrg(microOrg);
-		switchMacroOrg(macroOrg);
+	public void mapSetFile(){
+		mapFile(settings.getFileToMap());
 	}
-	
-	public Mapper(GeneratorType spacing, GeneratorType velocity, GeneratorType duration, GeneratorType microOrg, GeneratorType macroOrg){
-		switchSpacing(spacing);
-		switchVelocity(velocity);
-		switchDuration(duration);
-		switchMicroOrg(microOrg);
-		switchMacroOrg(macroOrg);
-	}
-	
-	public Mapper(Generator spacing, Generator velocity, Generator duration, Generator microOrg, Generator macroOrg){
-		switchSpacing(spacing);
-		switchVelocity(velocity);
-		switchDuration(duration);
-		switchMicroOrg(microOrg);
-		switchMacroOrg(macroOrg);
-	}
-	
-	public Mapper(File scheme){
-		importMappingScheme(scheme);
-	}
-	
-	public Mapper(){}
-	
+
 	public void mapFile(File f){
+		if(settings.DEBUG)
+			settings.console.println("STATUS: READING FILE...");
 		if(f == null)
 			throw new NullPointerException("Null file given!");
 		if(f.isDirectory()){
@@ -99,43 +65,62 @@ public class Mapper {
 		try{ 
 			for(byte b = fileInput.readByte() ; ; b = fileInput.readByte()){
 				Integer wrappedByte = new Integer(b);
-				ticksSoFar += spacing.getNext().getValue();
+				ticksSoFar += settings.getSpacingGenerator().getNext().getValue();
+				if(settings.getLength() < ticksSoFar)
+					return;
 				if(!mappingScheme.containsKey(wrappedByte))
 					continue;
 				for(Integer i : mappingScheme.get(wrappedByte)){
-					mappedNotes.add(new Note(i.intValue(), velocity.getResult().getValue(), ticksSoFar, duration.getResult().getValue()));
+					mappedNotes.add(new Note(i.intValue(), settings.getVelocityGenerator().getResult().getValue(),
+									ticksSoFar, settings.getDurationGenerator().getResult().getValue()));
 				}
-				velocity.step();
-				duration.step();
+				settings.getVelocityGenerator().step();
+				settings.getDurationGenerator().step();
 			}
 		} catch (IOException e){
-			if(Settings.DEBUG)
-				Settings.console.println("DONE READING FILE");
+			if(settings.DEBUG)
+				settings.console.println("STATUS: DONE READING FILE!");
 		}
 	}
 	
 	public void organize(){
-		if(microOrg == null)
+		if(settings.DEBUG)
+			settings.console.println("STATUS: ORGANIZING FILE...");
+		if(settings.getMicroOrgGenerator() == null)
 			return;
 		Collections.sort(mappedNotes);
 		int newestTime = -1;
 		for(Note n : mappedNotes){
 			if(n.getStartingTime() > newestTime){
-				microOrg.step();
+				settings.getMicroOrgGenerator().step();
 				newestTime = n.getStartingTime();
 			}
-			int delta = microOrg.getResult().getValue();
+			int delta = settings.getMicroOrgGenerator().getResult().getValue();
 			n.setNote(n.getNote() + delta);
 		}
+		if(settings.DEBUG)
+			settings.console.println("STATUS: DONE ORGANIZING FILE!");
+	}
+	
+	public void writeToFile(){
+		writeToFile(settings.outputFile.getAbsolutePath());
 	}
 	
 	public void writeToFile(String filename){
-		MidiFile mFile = new MidiFile(filename);
-		if(Settings.DEBUG)
-			Settings.console.println(mappedNotes);
+		if(settings.DEBUG)
+			settings.console.println("STATUS: WRITING TO FILE...");
+		MidiFile mFile = new MidiFile(filename, settings.getTempo());
+		if(settings.DEBUG)
+			settings.console.println(mappedNotes);
 		for(Note n : mappedNotes)
 			mFile.playNote(n);
 		mFile.finish();
+		if(settings.DEBUG)
+			settings.console.println("STATUS: DONE WRITING TO FILE!");
+	}
+	
+	public void importMappingScheme(){
+		importMappingScheme(settings.mappingScheme);
 	}
 	
 	public void importMappingScheme(File f){
@@ -150,6 +135,8 @@ public class Mapper {
 	}
 	
 	private void importMappingScheme(Scanner s) throws Exception{
+		if(settings.DEBUG)
+			settings.console.println("STATUS: IMPORTING MAPPING SCHEME...");
 		mappingScheme.clear();
 		while(s.hasNextLine()){
 			Scanner lineScanner = new Scanner(s.nextLine());
@@ -217,104 +204,8 @@ public class Mapper {
 			lineScanner.close();
 		}
 		s.close();
+		if(settings.DEBUG)
+			settings.console.println("STATUS: DONE IMPORTING MAPPING SCHEME!");
 	}
 	
-	public void switchSpacing(GeneratorType newType){
-		switch(newType){
-			case FNOISE:		spacing  = new FNoise(PropertyType.SPACING);
-								break;
-			case KARPLUS:		spacing = new KarplusStrong(PropertyType.SPACING);
-								break;
-			case TRIANGULAR:	spacing = new TriangularDist(PropertyType.SPACING);
-								break;
-			case MARKOV:		spacing = setupDefaultMarkov(PropertyType.SPACING);
-								break;
-			default:			throw new IllegalArgumentException("INVALID SPACING GENERATOR MODE");
-		}
-	}
-	
-	public void switchDuration(GeneratorType newType){
-		switch(newType){
-			case FNOISE:		duration  = new FNoise(PropertyType.DURATION);
-								break;
-			case KARPLUS:		duration = new KarplusStrong(PropertyType.DURATION);
-								break;
-			case TRIANGULAR:	duration = new TriangularDist(PropertyType.DURATION);
-								break;
-			case MARKOV:		duration = setupDefaultMarkov(PropertyType.DURATION);
-								break;
-			default:			throw new IllegalArgumentException("INVALID DURATION GENERATOR MODE");
-		}
-	}
-	
-	public void switchVelocity(GeneratorType newType){
-		switch(newType){
-			case FNOISE:		velocity = new FNoise(PropertyType.VELOCITY);
-								break;
-			case KARPLUS:		velocity = new KarplusStrong(PropertyType.VELOCITY);
-								break;
-			case TRIANGULAR:	velocity = new TriangularDist(PropertyType.VELOCITY);
-								break;
-			case MARKOV:		velocity = setupDefaultMarkov(PropertyType.VELOCITY);
-								break;
-			default:			throw new IllegalArgumentException("INVALID VELOCITY GENERATOR MODE");
-		}
-	}
-	
-	public void switchMicroOrg(GeneratorType newType){
-		// TODO fix dis
-		switch(newType){
-			case FNOISE:		microOrg = new FNoise(PropertyType.MICRO_ORG);
-								break;
-			case NONE:			microOrg = null;
-								break;
-			case TRIANGULAR:	microOrg = new TriangularDist(PropertyType.MICRO_ORG);
-								break;
-			case MARKOV:		microOrg = setupDefaultMarkov(PropertyType.MICRO_ORG);
-								break;
-			default:			throw new IllegalArgumentException("INVALID MICRO ORGANIZATION GENERATOR MODE");
-		}
-	}
-	
-	public void switchMacroOrg(GeneratorType newType){
-		// TODO fix dis
-		switch(newType){
-			case FNOISE:		macroOrg = new FNoise(PropertyType.MACRO_ORG);
-								break;
-			case NONE:			macroOrg = null;
-								break;
-			case TRIANGULAR:	macroOrg = new TriangularDist(PropertyType.MACRO_ORG);
-								break;
-			case MARKOV:		macroOrg = setupDefaultMarkov(PropertyType.MACRO_ORG);
-								break;
-			default:			throw new IllegalArgumentException("INVALID MACRO ORGANIZATION GENERATOR MODE");
-		}
-	}
-	
-	
-	
-	public void switchSpacing(Generator newSpacing){
-		spacing = newSpacing;
-	}
-	
-	public void switchDuration(Generator newDuration){
-		duration = newDuration;
-	}
-	
-	public void switchVelocity(Generator newVelocity){
-		velocity = newVelocity;
-	}
-	
-	public void switchMicroOrg(Generator newMicroOrg){
-		microOrg = newMicroOrg;
-	}
-	
-	public void switchMacroOrg(Generator newMacroOrg){
-		macroOrg = newMacroOrg;
-	}
-	
-	private Markov setupDefaultMarkov(PropertyType type){
-		// TODO fix dis
-		return null;
-	}
 }
