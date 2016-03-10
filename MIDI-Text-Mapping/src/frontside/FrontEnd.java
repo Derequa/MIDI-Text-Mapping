@@ -12,20 +12,25 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -38,7 +43,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 
 	private static final long serialVersionUID = 4829661262223915297L;
 	
-	private Dimension consoleSize = new Dimension(320, 400);
+	private Dimension consoleSize = new Dimension(320, 460);
 	private Dimension componentSize = new Dimension(330, 200);
 	
 	public static final int TEMPO_MAX = 330;
@@ -66,6 +71,8 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private String str_nosel_file = "No file selected";
 	private String str_nosel_dir = "No directory selected";
 	private String str_nosel_map = "No mapping scheme selected";
+	private String str_lbl_map = "Selected Mapping Scheme:";
+	private String str_btn_map = "Set Mapping Scheme";
 	private String str_opt_fnoise = FNOISE + " Options";
 	private String str_opt_karplus = KARPLUS + " Options";
 	private String str_opt_triangular = TRIANGULAR + " Options";
@@ -74,6 +81,12 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private String str_sub_opt_fnoise = "Number of Dice:";
 	private String str_sub_opt_karplus_buf = "Buffer Size:";
 	private String str_sub_opt_karplus_thres = "Reset Threshold:";
+	private String str_sub_opt_triangular_left = "Left Slant";
+	private String str_sub_opt_triangular_norm = "Normal";
+	private String str_sub_opt_triangular_right = "Right Slant";
+	private String str_sub_opt_markov_bal = "Balance Probabilities?";
+	private String str_sub_opt_markov_gen = "Generate Undefined Transitions?";
+	private String str_nosel_output = "output.mid";
 	
 	private JSlider sld_tempo = new JSlider(JSlider.HORIZONTAL, TEMPO_MIN, TEMPO_MAX, TEMPO_DEFAULT);
 	private JSlider sld_opt_fnoise_macro = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
@@ -98,36 +111,84 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JComboBox<String> combo_vel = new JComboBox<String>(std_strings);
 	private JComboBox<String> combo_spc = new JComboBox<String>(std_strings);
 	
-	private JButton btn_select_mapper = new JButton("Selecting a Mapping Scheme");
-	private JButton btn_select_file = new JButton("Choose a Source File");
-	private JButton btn_select_dir = new JButton("Choose a Source Folder");
+	private JButton btn_select_mapper = new JButton(str_btn_map);
+	private JButton btn_select_file = new JButton("Set Source File");
+	private JButton btn_select_dir = new JButton("Set Source Folder");
+	private JButton btn_select_output = new JButton("Set Output File");
 	private JButton btn_generate = new JButton("Generate!");
+	private JButton btn_markov_sel_file_macro = new JButton(str_btn_map);
+	private JButton btn_markov_sel_file_micro = new JButton(str_btn_map);
+	private JButton btn_markov_sel_file_dur = new JButton(str_btn_map);
+	private JButton btn_markov_sel_file_vel = new JButton(str_btn_map);
+	private JButton btn_markov_sel_file_spc = new JButton(str_btn_map);
+	
+	private JRadioButton btn_opt_triangular_left_macro = new JRadioButton();
+	private JRadioButton btn_opt_triangular_left_micro = new JRadioButton();
+	private JRadioButton btn_opt_triangular_left_dur = new JRadioButton();
+	private JRadioButton btn_opt_triangular_left_vel = new JRadioButton();
+	private JRadioButton btn_opt_triangular_left_spc = new JRadioButton();
+	private JRadioButton btn_opt_triangular_norm_macro = new JRadioButton();
+	private JRadioButton btn_opt_triangular_norm_micro = new JRadioButton();
+	private JRadioButton btn_opt_triangular_norm_dur = new JRadioButton();
+	private JRadioButton btn_opt_triangular_norm_vel = new JRadioButton();
+	private JRadioButton btn_opt_triangular_norm_spc = new JRadioButton();
+	private JRadioButton btn_opt_triangular_right_macro = new JRadioButton();
+	private JRadioButton btn_opt_triangular_right_micro = new JRadioButton();
+	private JRadioButton btn_opt_triangular_right_dur = new JRadioButton();
+	private JRadioButton btn_opt_triangular_right_vel = new JRadioButton();
+	private JRadioButton btn_opt_triangular_right_spc = new JRadioButton();
+	
+	private JCheckBox bx_opt_markov_bal_macro = new JCheckBox(str_sub_opt_markov_bal);
+	private JCheckBox bx_opt_markov_bal_micro = new JCheckBox(str_sub_opt_markov_bal);
+	private JCheckBox bx_opt_markov_bal_dur = new JCheckBox(str_sub_opt_markov_bal);
+	private JCheckBox bx_opt_markov_bal_vel = new JCheckBox(str_sub_opt_markov_bal);
+	private JCheckBox bx_opt_markov_bal_spc = new JCheckBox(str_sub_opt_markov_bal);
+	private JCheckBox bx_opt_markov_gen_macro = new JCheckBox(str_sub_opt_markov_gen);
+	private JCheckBox bx_opt_markov_gen_micro = new JCheckBox(str_sub_opt_markov_gen);
+	private JCheckBox bx_opt_markov_gen_dur = new JCheckBox(str_sub_opt_markov_gen);
+	private JCheckBox bx_opt_markov_gen_vel = new JCheckBox(str_sub_opt_markov_gen);
+	private JCheckBox bx_opt_markov_gen_spc = new JCheckBox(str_sub_opt_markov_gen);
 	
 	protected JTextArea gui_console = new JTextArea(50, 50);
-	private JTextArea txt_selected_file = new JTextArea(str_nosel_file);
-	private JTextArea txt_selected_dir = new JTextArea(str_nosel_dir);
-	private JTextArea txt_selected_map = new JTextArea(str_nosel_map);
-	private JTextArea txt_current_tempo = new JTextArea("" + sld_tempo.getValue());
-	private JTextArea txt_opt_fnoise_macro = new JTextArea("" + sld_opt_fnoise_macro.getValue());
-	private JTextArea txt_opt_fnoise_micro = new JTextArea("" + sld_opt_fnoise_micro.getValue());
-	private JTextArea txt_opt_fnoise_dur = new JTextArea("" + sld_opt_fnoise_dur.getValue());
-	private JTextArea txt_opt_fnoise_vel = new JTextArea("" + sld_opt_fnoise_vel.getValue());
-	private JTextArea txt_opt_fnoise_spc = new JTextArea("" + sld_opt_fnoise_spc.getValue());
-	private JTextArea txt_opt_karplus_buf_macro = new JTextArea("" + sld_opt_karplus_buf_macro.getValue());
-	private JTextArea txt_opt_karplus_buf_micro = new JTextArea("" + sld_opt_karplus_buf_micro.getValue());
-	private JTextArea txt_opt_karplus_buf_dur = new JTextArea("" + sld_opt_karplus_buf_dur.getValue());
-	private JTextArea txt_opt_karplus_buf_vel = new JTextArea("" + sld_opt_karplus_buf_vel.getValue());
-	private JTextArea txt_opt_karplus_buf_spc = new JTextArea("" + sld_opt_karplus_buf_spc.getValue());
-	private JTextArea txt_opt_karplus_thres_macro = new JTextArea("" + sld_opt_karplus_thres_macro.getValue());
-	private JTextArea txt_opt_karplus_thres_micro = new JTextArea("" + sld_opt_karplus_thres_micro.getValue());
-	private JTextArea txt_opt_karplus_thres_dur = new JTextArea("" + sld_opt_karplus_thres_dur.getValue());
-	private JTextArea txt_opt_karplus_thres_vel = new JTextArea("" + sld_opt_karplus_thres_vel.getValue());
-	private JTextArea txt_opt_karplus_thres_spc = new JTextArea("" + sld_opt_karplus_thres_spc.getValue());
+	
+	private JTextField txt_max_length = new JTextField();
 	
 	private JLabel lbl_selected_file = new JLabel("Selected File:");
 	private JLabel lbl_selected_dir = new JLabel("Selected Directory:");
 	private JLabel lbl_selected_map = new JLabel("Selected Mapping Scheme:");
+	private JLabel lbl_selected_output = new JLabel("Output File:");
 	private JLabel lbl_tempo = new JLabel("Tempo:");
+	private JLabel lbl_selected_file_name = new JLabel(str_nosel_file);
+	private JLabel lbl_selected_dir_name = new JLabel(str_nosel_dir);
+	private JLabel lbl_selected_map_name = new JLabel(str_nosel_map);
+	private JLabel lbl_selected_output_name = new JLabel(str_nosel_output);
+	private JLabel lbl_current_tempo = new JLabel("" + sld_tempo.getValue());
+	private JLabel lbl_opt_fnoise_macro = new JLabel("" + sld_opt_fnoise_macro.getValue());
+	private JLabel lbl_opt_fnoise_micro = new JLabel("" + sld_opt_fnoise_micro.getValue());
+	private JLabel lbl_opt_fnoise_dur = new JLabel("" + sld_opt_fnoise_dur.getValue());
+	private JLabel lbl_opt_fnoise_vel = new JLabel("" + sld_opt_fnoise_vel.getValue());
+	private JLabel lbl_opt_fnoise_spc = new JLabel("" + sld_opt_fnoise_spc.getValue());
+	private JLabel lbl_opt_karplus_buf_macro = new JLabel("" + sld_opt_karplus_buf_macro.getValue());
+	private JLabel lbl_opt_karplus_buf_micro = new JLabel("" + sld_opt_karplus_buf_micro.getValue());
+	private JLabel lbl_opt_karplus_buf_dur = new JLabel("" + sld_opt_karplus_buf_dur.getValue());
+	private JLabel lbl_opt_karplus_buf_vel = new JLabel("" + sld_opt_karplus_buf_vel.getValue());
+	private JLabel lbl_opt_karplus_buf_spc = new JLabel("" + sld_opt_karplus_buf_spc.getValue());
+	private JLabel lbl_opt_karplus_thres_macro = new JLabel("" + sld_opt_karplus_thres_macro.getValue());
+	private JLabel lbl_opt_karplus_thres_micro = new JLabel("" + sld_opt_karplus_thres_micro.getValue());
+	private JLabel lbl_opt_karplus_thres_dur = new JLabel("" + sld_opt_karplus_thres_dur.getValue());
+	private JLabel lbl_opt_karplus_thres_vel = new JLabel("" + sld_opt_karplus_thres_vel.getValue());
+	private JLabel lbl_opt_karplus_thres_spc = new JLabel("" + sld_opt_karplus_thres_spc.getValue());
+	private JLabel lbl_opt_markov_sel_file_macro = new JLabel(str_lbl_map);
+	private JLabel lbl_opt_markov_sel_file_micro = new JLabel(str_lbl_map);
+	private JLabel lbl_opt_markov_sel_file_dur = new JLabel(str_lbl_map);
+	private JLabel lbl_opt_markov_sel_file_vel = new JLabel(str_lbl_map);
+	private JLabel lbl_opt_markov_sel_file_spc = new JLabel(str_lbl_map);
+	private JLabel lbl_opt_markov_sel_file_name_macro = new JLabel(str_nosel_file);
+	private JLabel lbl_opt_markov_sel_file_name_micro = new JLabel(str_nosel_file);
+	private JLabel lbl_opt_markov_sel_file_name_dur = new JLabel(str_nosel_file);
+	private JLabel lbl_opt_markov_sel_file_name_vel = new JLabel(str_nosel_file);
+	private JLabel lbl_opt_markov_sel_file_name_spc = new JLabel(str_nosel_file);
+	private JLabel lbl_max_length = new JLabel("Max Length (Minutes):");
 	
 	// Panels for options, combo boxes, and their associated card-layout panels
 	private JPanel pnl_cards_org_macro = new JPanel(new CardLayout());
@@ -135,11 +196,18 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JPanel pnl_cards_dur = new JPanel(new CardLayout());
 	private JPanel pnl_cards_vel = new JPanel(new CardLayout());
 	private JPanel pnl_cards_spc = new JPanel(new CardLayout());
-	private JPanel pnl_options = new JPanel(new GridLayout(3, 0));
+	private JPanel pnl_options = new JPanel(new GridLayout(0, 3));
 	private JPanel pnl_console = new JPanel();
 	
 	private File toMap;
 	private File mappingScheme;
+	private File outputFile;
+	private File markov_map_macro;
+	private File markov_map_micro;
+	private File markov_map_dur;
+	private File markov_map_vel;
+	private File markov_map_spc;
+	private float maxLength = -1;
 
 	public FrontEnd(){
 		setupPanels();
@@ -157,21 +225,28 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		
 		pnl_options.add(btn_select_file);
 		pnl_options.add(lbl_selected_file);
-		pnl_options.add(txt_selected_file);
+		pnl_options.add(lbl_selected_file_name);
 		pnl_options.add(btn_select_dir);
 		pnl_options.add(lbl_selected_dir);
-		pnl_options.add(txt_selected_dir);
+		pnl_options.add(lbl_selected_dir_name);
 		pnl_options.add(btn_select_mapper);
 		pnl_options.add(lbl_selected_map);
-		pnl_options.add(txt_selected_map);
+		pnl_options.add(lbl_selected_map_name);
+		pnl_options.add(btn_select_output);
+		pnl_options.add(lbl_selected_output);
+		pnl_options.add(lbl_selected_output_name);
 		pnl_options.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_options));
 		c.add(pnl_options, BorderLayout.NORTH);
 		
 		JPanel genAndTemp = new JPanel(new GridLayout(0, 1));
-		JPanel tempoPanel = new JPanel(new GridLayout(0, 1));
-		
+		JPanel tempoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel lengthPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+		lengthPanel.add(lbl_max_length);
+		lengthPanel.add(txt_max_length);
 		tempoPanel.add(lbl_tempo);
-		tempoPanel.add(txt_current_tempo);
+		tempoPanel.add(lbl_current_tempo);
+		genAndTemp.add(lengthPanel);
 		genAndTemp.add(tempoPanel);
 		genAndTemp.add(sld_tempo);
 		genAndTemp.add(btn_generate);
@@ -187,7 +262,6 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		
 		
 		JScrollPane consolePane = new JScrollPane(gui_console);
-		gui_console.setEditable(false);
 		consolePane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		consolePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		consolePane.setPreferredSize(consoleSize);
@@ -217,6 +291,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		btn_select_dir.addActionListener(this);
 		btn_generate.addActionListener(this);
 		btn_select_mapper.addActionListener(this);
+		btn_select_output.addActionListener(this);
 		combo_org_macro.addActionListener(this);
 		combo_org_micro.addActionListener(this);
 		combo_dur.addActionListener(this);
@@ -238,56 +313,64 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		sld_opt_karplus_thres_dur.addChangeListener(this);
 		sld_opt_karplus_thres_vel.addChangeListener(this);
 		sld_opt_karplus_thres_spc.addChangeListener(this);
+		btn_opt_triangular_left_macro.addActionListener(this);
+		btn_opt_triangular_left_micro.addActionListener(this);
+		btn_opt_triangular_left_dur.addActionListener(this);
+		btn_opt_triangular_left_vel.addActionListener(this);
+		btn_opt_triangular_left_spc.addActionListener(this);
+		btn_opt_triangular_norm_macro.addActionListener(this);
+		btn_opt_triangular_norm_micro.addActionListener(this);
+		btn_opt_triangular_norm_dur.addActionListener(this);
+		btn_opt_triangular_norm_vel.addActionListener(this);
+		btn_opt_triangular_norm_spc.addActionListener(this);
+		btn_opt_triangular_right_macro.addActionListener(this);
+		btn_opt_triangular_right_micro.addActionListener(this);
+		btn_opt_triangular_right_dur.addActionListener(this);
+		btn_opt_triangular_right_vel.addActionListener(this);
+		btn_opt_triangular_right_spc.addActionListener(this);
+		btn_markov_sel_file_macro.addActionListener(this);
+		btn_markov_sel_file_micro.addActionListener(this);
+		btn_markov_sel_file_dur.addActionListener(this);
+		btn_markov_sel_file_vel.addActionListener(this);
+		btn_markov_sel_file_spc.addActionListener(this);
 		
 		sld_tempo.setPaintTicks(true);
 		sld_tempo.setPaintLabels(true);
 		sld_tempo.setMajorTickSpacing(50);
 		sld_tempo.setMinorTickSpacing(10);
-		txt_current_tempo.setEditable(false);
-		txt_selected_file.setEditable(false);
-		txt_selected_dir.setEditable(false);
-		txt_selected_map.setEditable(false);
-		txt_opt_fnoise_macro.setEditable(false);
-		txt_opt_fnoise_micro.setEditable(false);
-		txt_opt_fnoise_dur.setEditable(false);
-		txt_opt_fnoise_vel.setEditable(false);
-		txt_opt_fnoise_spc.setEditable(false);
-		txt_opt_karplus_buf_macro.setEditable(false);
-		txt_opt_karplus_buf_micro.setEditable(false);
-		txt_opt_karplus_buf_dur.setEditable(false);
-		txt_opt_karplus_buf_vel.setEditable(false);
-		txt_opt_karplus_buf_spc.setEditable(false);
-		txt_opt_karplus_thres_macro.setEditable(false);
-		txt_opt_karplus_thres_micro.setEditable(false);
-		txt_opt_karplus_thres_dur.setEditable(false);
-		txt_opt_karplus_thres_vel.setEditable(false);
-		txt_opt_karplus_thres_spc.setEditable(false);
+		gui_console.setEditable(false);
+		txt_max_length.setPreferredSize(new Dimension(50, 20));
 		
-		setupSlider(sld_opt_fnoise_macro, GeneratorType.FNOISE);
-		setupSlider(sld_opt_fnoise_micro, GeneratorType.FNOISE);
-		setupSlider(sld_opt_fnoise_dur, GeneratorType.FNOISE);
-		setupSlider(sld_opt_fnoise_vel, GeneratorType.FNOISE);
-		setupSlider(sld_opt_fnoise_spc, GeneratorType.FNOISE);
-		setupSlider(sld_opt_karplus_buf_macro, GeneratorType.KARPLUS);
-		setupSlider(sld_opt_karplus_buf_micro, GeneratorType.KARPLUS);
-		setupSlider(sld_opt_karplus_buf_dur, GeneratorType.KARPLUS);
-		setupSlider(sld_opt_karplus_buf_vel, GeneratorType.KARPLUS);
-		setupSlider(sld_opt_karplus_buf_spc, GeneratorType.KARPLUS);
-		setupSlider(sld_opt_karplus_thres_macro, GeneratorType.KARPLUS);
-		setupSlider(sld_opt_karplus_thres_micro, GeneratorType.KARPLUS);
-		setupSlider(sld_opt_karplus_thres_dur, GeneratorType.KARPLUS);
-		setupSlider(sld_opt_karplus_thres_vel, GeneratorType.KARPLUS);
-		setupSlider(sld_opt_karplus_thres_spc, GeneratorType.KARPLUS);
+		setupSlider(sld_opt_fnoise_macro, 0);
+		setupSlider(sld_opt_fnoise_micro, 0);
+		setupSlider(sld_opt_fnoise_dur, 0);
+		setupSlider(sld_opt_fnoise_vel, 0);
+		setupSlider(sld_opt_fnoise_spc, 0);
+		setupSlider(sld_opt_karplus_buf_macro, 1);
+		setupSlider(sld_opt_karplus_buf_micro, 1);
+		setupSlider(sld_opt_karplus_buf_dur, 1);
+		setupSlider(sld_opt_karplus_buf_vel, 1);
+		setupSlider(sld_opt_karplus_buf_spc, 1);
+		setupSlider(sld_opt_karplus_thres_macro, 2);
+		setupSlider(sld_opt_karplus_thres_micro, 2);
+		setupSlider(sld_opt_karplus_thres_dur, 2);
+		setupSlider(sld_opt_karplus_thres_vel, 2);
+		setupSlider(sld_opt_karplus_thres_spc, 2);
+		
+		btn_generate.setEnabled(toMap != null);
 	}
 	
-	private void setupSlider(JSlider j, GeneratorType mode){
+	private void setupSlider(JSlider j, int opt){
 		j.setPaintLabels(true);
 		j.setPaintTicks(true);
-		switch(mode){
-			case FNOISE:		j.setMajorTickSpacing(10);
+		switch(opt){
+			case 0:				j.setMajorTickSpacing(10);
 								j.setMinorTickSpacing(3);
 								break;
-			case KARPLUS:		j.setMajorTickSpacing(15);
+			case 1:				j.setMajorTickSpacing(5);
+								j.setMinorTickSpacing(1);
+								break;
+			case 2:				j.setMajorTickSpacing(15);
 								j.setMinorTickSpacing(5);
 								break;
 			default:			break;
@@ -297,23 +380,23 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	
 	private JPanel assembleFNoiseCard(PropertyType mode){
 		JPanel build = new JPanel(new GridLayout(0, 1));
-		JPanel info = new JPanel(new GridLayout(1, 0));
+		JPanel info = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		info.add(new JLabel(str_sub_opt_fnoise));
 		build.add(info);
 		switch(mode){
-			case MACRO_ORG:		info.add(txt_opt_fnoise_macro);
+			case MACRO_ORG:		info.add(lbl_opt_fnoise_macro);
 								build.add(sld_opt_fnoise_macro);
 								break;
-			case MICRO_ORG:		info.add(txt_opt_fnoise_micro);
+			case MICRO_ORG:		info.add(lbl_opt_fnoise_micro);
 								build.add(sld_opt_fnoise_micro);
 								break;
-			case DURATION:		info.add(txt_opt_fnoise_dur);
+			case DURATION:		info.add(lbl_opt_fnoise_dur);
 								build.add(sld_opt_fnoise_dur);
 								break;
-			case VELOCITY:		info.add(txt_opt_fnoise_vel);
+			case VELOCITY:		info.add(lbl_opt_fnoise_vel);
 								build.add(sld_opt_fnoise_vel);
 								break;
-			case SPACING:		info.add(txt_opt_fnoise_spc);
+			case SPACING:		info.add(lbl_opt_fnoise_spc);
 								build.add(sld_opt_fnoise_spc);
 								break;
 		}
@@ -324,41 +407,41 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	
 	private JPanel assembleKarplusCard(PropertyType mode){
 		JPanel build = new JPanel(new GridLayout(0, 1));
-		JPanel slider1 = new JPanel(new GridLayout(1, 0));
-		JPanel slider2 = new JPanel(new GridLayout(1, 0));
+		JPanel slider1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel slider2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		slider1.add(new JLabel(str_sub_opt_karplus_thres));
 		slider2.add(new JLabel(str_sub_opt_karplus_buf));
 		switch(mode){
-			case MACRO_ORG:		slider1.add(txt_opt_karplus_thres_macro);
-								slider2.add(txt_opt_karplus_buf_macro);
+			case MACRO_ORG:		slider1.add(lbl_opt_karplus_thres_macro);
+								slider2.add(lbl_opt_karplus_buf_macro);
 								build.add(slider1);
 								build.add(sld_opt_karplus_thres_macro);
 								build.add(slider2);
 								build.add(sld_opt_karplus_buf_macro);
 								break;
-			case MICRO_ORG:		slider1.add(txt_opt_karplus_thres_micro);
-								slider2.add(txt_opt_karplus_buf_micro);
+			case MICRO_ORG:		slider1.add(lbl_opt_karplus_thres_micro);
+								slider2.add(lbl_opt_karplus_buf_micro);
 								build.add(slider1);
 								build.add(sld_opt_karplus_thres_micro);
 								build.add(slider2);
 								build.add(sld_opt_karplus_buf_micro);
 								break;
-			case DURATION:		slider1.add(txt_opt_karplus_thres_dur);
-								slider2.add(txt_opt_karplus_buf_dur);
+			case DURATION:		slider1.add(lbl_opt_karplus_thres_dur);
+								slider2.add(lbl_opt_karplus_buf_dur);
 								build.add(slider1);
 								build.add(sld_opt_karplus_thres_dur);
 								build.add(slider2);
 								build.add(sld_opt_karplus_buf_dur);
 								break;
-			case VELOCITY:		slider1.add(txt_opt_karplus_thres_vel);
-								slider2.add(txt_opt_karplus_buf_vel);
+			case VELOCITY:		slider1.add(lbl_opt_karplus_thres_vel);
+								slider2.add(lbl_opt_karplus_buf_vel);
 								build.add(slider1);
 								build.add(sld_opt_karplus_thres_vel);
 								build.add(slider2);
 								build.add(sld_opt_karplus_buf_vel);
 								break;
-			case SPACING:		slider1.add(txt_opt_karplus_thres_spc);
-								slider2.add(txt_opt_karplus_buf_spc);
+			case SPACING:		slider1.add(lbl_opt_karplus_thres_spc);
+								slider2.add(lbl_opt_karplus_buf_spc);
 								build.add(slider1);
 								build.add(sld_opt_karplus_thres_spc);
 								build.add(slider2);
@@ -371,23 +454,92 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	}
 
 	private JPanel assembleTriangularCard(PropertyType mode){
-		JPanel build = new JPanel();
+		JPanel build = new JPanel(new GridLayout(0, 2));
+		switch(mode){
+			case MACRO_ORG:		build.add(btn_opt_triangular_left_macro);
+								build.add(new JLabel(str_sub_opt_triangular_left));
+								build.add(btn_opt_triangular_norm_macro);
+								build.add(new JLabel(str_sub_opt_triangular_norm));
+								build.add(btn_opt_triangular_right_macro);
+								build.add(new JLabel(str_sub_opt_triangular_right));
+								break;
+			case MICRO_ORG:		build.add(btn_opt_triangular_left_micro);
+								build.add(new JLabel(str_sub_opt_triangular_left));
+								build.add(btn_opt_triangular_norm_micro);
+								build.add(new JLabel(str_sub_opt_triangular_norm));
+								build.add(btn_opt_triangular_right_micro);
+								build.add(new JLabel(str_sub_opt_triangular_right));
+								break;
+			case DURATION:		build.add(btn_opt_triangular_left_dur);
+								build.add(new JLabel(str_sub_opt_triangular_left));
+								build.add(btn_opt_triangular_norm_dur);
+								build.add(new JLabel(str_sub_opt_triangular_norm));
+								build.add(btn_opt_triangular_right_dur);
+								build.add(new JLabel(str_sub_opt_triangular_right));
+								break;
+			case VELOCITY:		build.add(btn_opt_triangular_left_vel);
+								build.add(new JLabel(str_sub_opt_triangular_left));
+								build.add(btn_opt_triangular_norm_vel);
+								build.add(new JLabel(str_sub_opt_triangular_norm));
+								build.add(btn_opt_triangular_right_vel);
+								build.add(new JLabel(str_sub_opt_triangular_right));
+								break;
+			case SPACING:		build.add(btn_opt_triangular_left_spc);
+								build.add(new JLabel(str_sub_opt_triangular_left));
+								build.add(btn_opt_triangular_norm_spc);
+								build.add(new JLabel(str_sub_opt_triangular_norm));
+								build.add(btn_opt_triangular_right_spc);
+								build.add(new JLabel(str_sub_opt_triangular_right));
+								break;
+		}
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_triangular));
-		build.add(new JTextArea("TRIANGULAR OPTIONS IN PROGRESS..."));
 		return build;
 	}
 	
 	private JPanel assembleMarkovCard(PropertyType mode){
-		JPanel build = new JPanel();
+		JPanel build = new JPanel(new GridLayout(0, 1));
+		JPanel labels = new JPanel(new GridLayout(1, 0));
+		build.add(labels);
+		switch(mode){
+			case MACRO_ORG:		build.add(btn_markov_sel_file_macro);
+								labels.add(lbl_opt_markov_sel_file_macro);
+								labels.add(lbl_opt_markov_sel_file_name_macro);
+								build.add(bx_opt_markov_bal_macro);
+								build.add(bx_opt_markov_gen_macro);
+								break;
+			case MICRO_ORG:		build.add(btn_markov_sel_file_micro);
+								labels.add(lbl_opt_markov_sel_file_micro);
+								labels.add(lbl_opt_markov_sel_file_name_micro);
+								build.add(bx_opt_markov_bal_micro);
+								build.add(bx_opt_markov_gen_micro);
+								break;
+			case DURATION:		build.add(btn_markov_sel_file_dur);
+								labels.add(lbl_opt_markov_sel_file_dur);
+								labels.add(lbl_opt_markov_sel_file_name_dur);
+								build.add(bx_opt_markov_bal_dur);
+								build.add(bx_opt_markov_gen_dur);
+								break;
+			case VELOCITY:		build.add(btn_markov_sel_file_vel);
+								labels.add(lbl_opt_markov_sel_file_vel);
+								labels.add(lbl_opt_markov_sel_file_name_vel);
+								build.add(bx_opt_markov_bal_vel);
+								build.add(bx_opt_markov_gen_vel);
+								break;
+			case SPACING:		build.add(btn_markov_sel_file_spc);
+								labels.add(lbl_opt_markov_sel_file_spc);
+								labels.add(lbl_opt_markov_sel_file_name_spc);
+								build.add(bx_opt_markov_bal_spc);
+								build.add(bx_opt_markov_gen_spc);
+								break;
+		}
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_markov));
-		build.add(new JTextArea("MARKOV OPTIONS IN PROGRESS..."));
 		return build;
 	}
 	
 	private JPanel assembleNoneCard(){
 		JPanel build = new JPanel();
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_none));
-		build.add(new JTextArea("NONE OPTIONS IN PROGRESS..."));
+		build.add(new JLabel("No Options Available"));
 		return build;
 	}
 	
@@ -417,61 +569,144 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 			File f = selectFile(JFileChooser.FILES_ONLY);
 			if(f != null){
 				toMap = f;
-				txt_selected_file.setText(f.getName());
-				txt_selected_dir.setText(str_nosel_dir);
+				lbl_selected_file_name.setText(f.getName());
+				lbl_selected_dir_name.setText(str_nosel_dir);
 			}
+			btn_generate.setEnabled(toMap != null);
 		}
 		else if(e.getSource().equals(btn_select_dir)){
 			File f = selectFile(JFileChooser.DIRECTORIES_ONLY);
 			if(f != null){
 				toMap = f;
-				txt_selected_file.setText(str_nosel_file);
-				txt_selected_dir.setText(f.getName());
+				lbl_selected_file_name.setText(str_nosel_file);
+				lbl_selected_dir_name.setText(f.getName());
 			}
+			btn_generate.setEnabled(toMap != null);
 		}
 		else if(e.getSource().equals(btn_select_mapper)){
 			File f = selectFile(JFileChooser.FILES_ONLY);
 			if(f != null){
 				mappingScheme = f;
-				txt_selected_map.setText(f.getName());
+				lbl_selected_map_name.setText(f.getName());
 			}
 		}
+		else if(e.getSource().equals(btn_select_output)){
+			File f = selectFile(JFileChooser.FILES_ONLY);
+			if(f != null){
+				outputFile = f;
+				lbl_selected_output_name.setText(f.getName());
+			}
+		}
+		else if(e.getSource().equals(btn_markov_sel_file_macro)){
+			File f = selectFile(JFileChooser.FILES_ONLY);
+			if(f != null){
+				outputFile = f;
+				lbl_opt_markov_sel_file_name_macro.setText(f.getName());
+			}
+		}
+		else if(e.getSource().equals(btn_markov_sel_file_micro)){
+			File f = selectFile(JFileChooser.FILES_ONLY);
+			if(f != null){
+				outputFile = f;
+				lbl_opt_markov_sel_file_name_micro.setText(f.getName());
+			}
+		}
+		else if(e.getSource().equals(btn_markov_sel_file_dur)){
+			File f = selectFile(JFileChooser.FILES_ONLY);
+			if(f != null){
+				outputFile = f;
+				lbl_opt_markov_sel_file_name_dur.setText(f.getName());
+			}
+		}
+		else if(e.getSource().equals(btn_markov_sel_file_vel)){
+			File f = selectFile(JFileChooser.FILES_ONLY);
+			if(f != null){
+				outputFile = f;
+				lbl_opt_markov_sel_file_name_vel.setText(f.getName());
+			}
+		}
+		else if(e.getSource().equals(btn_markov_sel_file_spc)){
+			File f = selectFile(JFileChooser.FILES_ONLY);
+			if(f != null){
+				outputFile = f;
+				lbl_opt_markov_sel_file_name_spc.setText(f.getName());
+			}
+		}
+		else if(e.getSource().equals(btn_opt_triangular_left_macro))
+			setSelectedButtonSet(btn_opt_triangular_left_macro, btn_opt_triangular_norm_macro, btn_opt_triangular_right_macro);
+		else if(e.getSource().equals(btn_opt_triangular_norm_macro))
+			setSelectedButtonSet(btn_opt_triangular_norm_macro, btn_opt_triangular_left_macro, btn_opt_triangular_right_macro);
+		else if(e.getSource().equals(btn_opt_triangular_right_macro))
+			setSelectedButtonSet(btn_opt_triangular_right_macro, btn_opt_triangular_left_macro, btn_opt_triangular_norm_macro);
+		else if(e.getSource().equals(btn_opt_triangular_left_micro))
+			setSelectedButtonSet(btn_opt_triangular_left_micro, btn_opt_triangular_norm_micro, btn_opt_triangular_right_micro);
+		else if(e.getSource().equals(btn_opt_triangular_norm_micro))
+			setSelectedButtonSet(btn_opt_triangular_norm_micro, btn_opt_triangular_left_micro, btn_opt_triangular_right_micro);
+		else if(e.getSource().equals(btn_opt_triangular_right_micro))
+			setSelectedButtonSet(btn_opt_triangular_right_micro, btn_opt_triangular_left_micro, btn_opt_triangular_norm_micro);
+		else if(e.getSource().equals(btn_opt_triangular_left_dur))
+			setSelectedButtonSet(btn_opt_triangular_left_dur, btn_opt_triangular_norm_dur, btn_opt_triangular_right_dur);
+		else if(e.getSource().equals(btn_opt_triangular_norm_dur))
+			setSelectedButtonSet(btn_opt_triangular_norm_dur, btn_opt_triangular_left_dur, btn_opt_triangular_right_dur);
+		else if(e.getSource().equals(btn_opt_triangular_right_dur))
+			setSelectedButtonSet(btn_opt_triangular_right_dur, btn_opt_triangular_left_dur, btn_opt_triangular_norm_dur);
+		else if(e.getSource().equals(btn_opt_triangular_left_vel))
+			setSelectedButtonSet(btn_opt_triangular_left_vel, btn_opt_triangular_norm_vel, btn_opt_triangular_right_vel);
+		else if(e.getSource().equals(btn_opt_triangular_norm_vel))
+			setSelectedButtonSet(btn_opt_triangular_norm_vel, btn_opt_triangular_left_vel, btn_opt_triangular_right_vel);
+		else if(e.getSource().equals(btn_opt_triangular_right_vel))
+			setSelectedButtonSet(btn_opt_triangular_right_vel, btn_opt_triangular_left_vel, btn_opt_triangular_norm_vel);
+		else if(e.getSource().equals(btn_opt_triangular_left_spc))
+			setSelectedButtonSet(btn_opt_triangular_left_spc, btn_opt_triangular_norm_spc, btn_opt_triangular_right_spc);
+		else if(e.getSource().equals(btn_opt_triangular_norm_spc))
+			setSelectedButtonSet(btn_opt_triangular_norm_spc, btn_opt_triangular_left_spc, btn_opt_triangular_right_spc);
+		else if(e.getSource().equals(btn_opt_triangular_right_spc))
+			setSelectedButtonSet(btn_opt_triangular_right_spc, btn_opt_triangular_left_spc, btn_opt_triangular_norm_spc);
+		else if(e.getSource().equals(btn_generate)){
+			
+		}
+	}
+	
+	private void setSelectedButtonSet(JRadioButton selected, JRadioButton unselected0, JRadioButton unselected1){
+		selected.setSelected(true);
+		unselected0.setSelected(false);
+		unselected1.setSelected(false);
 	}
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		if(e.getSource().equals(sld_tempo))
-			txt_current_tempo.setText("" + sld_tempo.getValue());
+			lbl_current_tempo.setText("" + sld_tempo.getValue());
 		else if(e.getSource().equals(sld_opt_fnoise_macro))
-			txt_opt_fnoise_macro.setText("" + sld_opt_fnoise_macro.getValue());
+			lbl_opt_fnoise_macro.setText("" + sld_opt_fnoise_macro.getValue());
 		else if(e.getSource().equals(sld_opt_fnoise_micro))
-			txt_opt_fnoise_micro.setText("" + sld_opt_fnoise_micro.getValue());
+			lbl_opt_fnoise_micro.setText("" + sld_opt_fnoise_micro.getValue());
 		else if(e.getSource().equals(sld_opt_fnoise_dur))
-			txt_opt_fnoise_dur.setText("" + sld_opt_fnoise_dur.getValue());
+			lbl_opt_fnoise_dur.setText("" + sld_opt_fnoise_dur.getValue());
 		else if(e.getSource().equals(sld_opt_fnoise_vel))
-			txt_opt_fnoise_vel.setText("" + sld_opt_fnoise_vel.getValue());
+			lbl_opt_fnoise_vel.setText("" + sld_opt_fnoise_vel.getValue());
 		else if(e.getSource().equals(sld_opt_fnoise_spc))
-			txt_opt_fnoise_spc.setText("" + sld_opt_fnoise_spc.getValue());
+			lbl_opt_fnoise_spc.setText("" + sld_opt_fnoise_spc.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_buf_macro))
-			txt_opt_karplus_buf_macro.setText("" + sld_opt_karplus_buf_macro.getValue());
+			lbl_opt_karplus_buf_macro.setText("" + sld_opt_karplus_buf_macro.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_buf_micro))
-			txt_opt_karplus_buf_micro.setText("" + sld_opt_karplus_buf_micro.getValue());
+			lbl_opt_karplus_buf_micro.setText("" + sld_opt_karplus_buf_micro.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_buf_dur))
-			txt_opt_karplus_buf_dur.setText("" + sld_opt_karplus_buf_dur.getValue());
+			lbl_opt_karplus_buf_dur.setText("" + sld_opt_karplus_buf_dur.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_buf_vel))
-			txt_opt_karplus_buf_vel.setText("" + sld_opt_karplus_buf_vel.getValue());
+			lbl_opt_karplus_buf_vel.setText("" + sld_opt_karplus_buf_vel.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_buf_spc))
-			txt_opt_karplus_buf_spc.setText("" + sld_opt_karplus_buf_spc.getValue());
+			lbl_opt_karplus_buf_spc.setText("" + sld_opt_karplus_buf_spc.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_thres_macro))
-			txt_opt_karplus_thres_macro.setText("" + sld_opt_karplus_thres_macro.getValue());
+			lbl_opt_karplus_thres_macro.setText("" + sld_opt_karplus_thres_macro.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_thres_micro))
-			txt_opt_karplus_thres_micro.setText("" + sld_opt_karplus_thres_micro.getValue());
+			lbl_opt_karplus_thres_micro.setText("" + sld_opt_karplus_thres_micro.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_thres_dur))
-			txt_opt_karplus_thres_dur.setText("" + sld_opt_karplus_thres_dur.getValue());
+			lbl_opt_karplus_thres_dur.setText("" + sld_opt_karplus_thres_dur.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_thres_vel))
-			txt_opt_karplus_thres_vel.setText("" + sld_opt_karplus_thres_vel.getValue());
+			lbl_opt_karplus_thres_vel.setText("" + sld_opt_karplus_thres_vel.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_thres_spc))
-			txt_opt_karplus_thres_spc.setText("" + sld_opt_karplus_thres_spc.getValue());
+			lbl_opt_karplus_thres_spc.setText("" + sld_opt_karplus_thres_spc.getValue());
 	}
 
 }
