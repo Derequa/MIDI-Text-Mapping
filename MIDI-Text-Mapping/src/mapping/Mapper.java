@@ -85,13 +85,14 @@ public class Mapper {
 		int newestTime = -1;
 		for(Note n : mappedNotes){
 			if(n.getStartingTime() > newestTime){
-				g.step();
-				newestTime = n.getStartingTime();
-				beatCounter++;
-			}
-			if(beatCounter >= changeThreshold){
+				int lastTime = newestTime;
 				int delta = g.getResult().getValue();
 				n.setNote(n.getNote() + delta);
+				newestTime = n.getStartingTime();
+				beatCounter += (newestTime - lastTime) / MidiFile.TICKS_PER_BEAT;
+			}
+			if(beatCounter >= changeThreshold){
+				g.step();
 				beatCounter = 0;
 			}
 		}
