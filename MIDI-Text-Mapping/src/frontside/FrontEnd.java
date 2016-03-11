@@ -722,7 +722,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		if(outputFile != null)
 			s.outputFile = outputFile;
 		else
-			s.outputFile = new File(str_nosel_output);
+			s.outputFile = new File("output/" + str_nosel_output);
 		s.setTempo(sld_tempo.getValue());
 		float length = -1;
 		try {

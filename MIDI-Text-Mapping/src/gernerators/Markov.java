@@ -328,6 +328,21 @@ public class Markov implements Generator {
 								break;
 			default:			return null;
 		}
+		if((mode == PropertyType.SPACING) || (mode == PropertyType.DURATION)){
+			switch(value){
+				case 1:		value = Time.TICKS_PER_SIXTEENTH;
+							break;
+				case 2:		value = Time.TICKS_PER_EIGTH;
+							break;
+				case 4:		value = Time.TICKS_PER_QUARTER;
+							break;
+				case 8:		value = Time.TICKS_PER_HALF;
+							break;
+				case 16:	value = Time.TICKS_PER_WHOLE;
+							break;
+				default:	break;
+			}
+		}
 		p.setValueToClosest(value);
 		return p;
 	}
