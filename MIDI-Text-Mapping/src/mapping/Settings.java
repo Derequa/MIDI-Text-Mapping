@@ -13,13 +13,19 @@ import gernerators.properties.Property.PropertyType;
 
 public class Settings {
 	
-	public final boolean DEBUG = true;
+	public final static boolean DEBUG = true;
 	
 	public static final int TEMPO_MAX = 330;
 	public static final int TEMPO_MIN = 30;
 	public static final int TEMPO_DEFAULT = 130;
 	
-	public PrintStream console = System.out;
+	public static final int MACRO_ORG_MAX = 64;
+	public static final int MACRO_ORG_DEFAULT = 16;
+	public static final int MICRO_ORG_MAX = 16;
+	public static final int MICRO_ORG_DEFAULT = 0;
+	public static final int ORG_MIN = 0;
+	
+	public static PrintStream console = System.out;
 	private File toMap;
 	public File mappingScheme;
 	public File outputFile;
@@ -27,12 +33,22 @@ public class Settings {
 	private int maxTick;
 	private float time;
 	private int tempo = TEMPO_DEFAULT;
+	private int macroThreshold = MACRO_ORG_DEFAULT;
+	private int microThreshold = MICRO_ORG_DEFAULT;
 	
 	private Generator macroOrg;
 	private Generator microOrg;
 	private Generator duration;
 	private Generator velocity;
 	private Generator spacing;
+	
+	public int getMacroThreshold(){
+		return macroThreshold;
+	}
+	
+	public int getMicroThreshold(){
+		return microThreshold;
+	}
 	
 	public File getFileToMap(){
 		return toMap;
@@ -77,18 +93,33 @@ public class Settings {
 		return spacing;
 	}
 	
-	public void setFileToMap(File toMap){
+	public void setFileToMap(File toMap) throws Exception{
 		if(toMap == null){
-			console.println("ERROR: NULL FILE GIVEN!");
-			throw new IllegalArgumentException("NULL FILE GIVEN");
+			failAndHalt("NULL FILE GIVEN!");
 		}
 		this.toMap = toMap;
 	}
 	
+	public void setMacroThreshold(int newThreshold){
+		if((newThreshold > MACRO_ORG_MAX) || (newThreshold < ORG_MIN)){
+			fail("INVALID MACRO ORGANIZATION THRESHOLD");
+			return;
+		}
+		macroThreshold = newThreshold;
+	}
+	
+	public void setMicroThreshold(int newThreshold){
+		if((newThreshold > MICRO_ORG_MAX) || (newThreshold < ORG_MIN)){
+			fail("INVALID MICRO ORGANIZATION THRESHOLD");
+			return;
+		}
+		microThreshold = newThreshold;
+	}
+	
 	public void setTempo(int newTempo){
 		if((newTempo > TEMPO_MAX) || (newTempo < TEMPO_MIN)){
-			console.println("ERROR: INVALID TEMPO PARAMETER!");
-			throw new IllegalArgumentException("INVALID TEMPO PARAMETER");
+			fail("ERROR: INVALID TEMPO PARAMETER!");
+			return;
 		}
 		tempo = newTempo;
 		maxTick = (int) (tempo * MidiFile.TICKS_PER_BEAT * time);
@@ -97,8 +128,8 @@ public class Settings {
 	public void setLength(float time){
 		this.time = time;
 		if(time < -1){
-			console.println("ERROR: INVALID LENGTH PARAMETER!");
-			throw new IllegalArgumentException("INVALID LENGTH PARAMETER");
+			fail("INVALID LENGTH PARAMETER!");
+			this.time = -1;
 		}
 		if(time >= 0)
 			maxTick = (int) (tempo * MidiFile.TICKS_PER_BEAT * time);
@@ -116,8 +147,8 @@ public class Settings {
 								break;
 			case MARKOV:		spacing = new Markov(PropertyType.SPACING);
 								break;
-			default:			console.println("ERROR: INVALID SPACING GENERATOR MODE!");
-								throw new IllegalArgumentException("INVALID SPACING GENERATOR MODE");
+			default:			fail("INVALID SPACING GENERATOR MODE!");
+								break;
 		}
 	}
 	
@@ -131,8 +162,8 @@ public class Settings {
 								break;
 			case MARKOV:		duration = new Markov(PropertyType.DURATION);
 								break;
-			default:			console.println("ERROR: INVALID DURATION GENERATOR MODE!");
-								throw new IllegalArgumentException("INVALID DURATION GENERATOR MODE");
+			default:			fail("INVALID DURATION GENERATOR MODE!");
+								break;
 		}
 	}
 	
@@ -146,8 +177,8 @@ public class Settings {
 								break;
 			case MARKOV:		velocity = new Markov(PropertyType.VELOCITY);
 								break;
-			default:			console.println("ERROR: INVALID VELOCITY GENERATOR MODE!");
-								throw new IllegalArgumentException("INVALID VELOCITY GENERATOR MODE");
+			default:			fail("INVALID VELOCITY GENERATOR MODE!");
+								break;
 		}
 	}
 	
@@ -161,8 +192,8 @@ public class Settings {
 								break;
 			case MARKOV:		microOrg = new Markov(PropertyType.MICRO_ORG);
 								break;
-			default:			console.println("ERROR: MICRO ORGANIZATION VELOCITY GENERATOR MODE!");
-								throw new IllegalArgumentException("INVALID MICRO ORGANIZATION GENERATOR MODE");
+			default:			fail("INVALID MICRO ORGANIZATION GENERATOR MODE!");
+								break;
 		}
 	}
 	
@@ -176,51 +207,56 @@ public class Settings {
 								break;
 			case MARKOV:		macroOrg = new Markov(PropertyType.MACRO_ORG);
 								break;
-			default:			console.println("ERROR: MACRO ORGANIZATION VELOCITY GENERATOR MODE!");
-								throw new IllegalArgumentException("INVALID MACRO ORGANIZATION GENERATOR MODE");
+			default:			fail("INVALID MACRO ORGANIZATION GENERATOR MODE!");
+								break;
 		}
 	}
 	
 	
 	
 	public void setSpacing(Generator newSpacing){
-		if(newSpacing == null){
-			console.println("ERROR: NULL GENERATOR!");
-			throw new IllegalArgumentException("NULL GENERATOR");
-		}
+		if(newSpacing == null)
+			fail("NULL GENERATOR");
 		spacing = newSpacing;
 	}
 	
 	public void setDuration(Generator newDuration){
-		if(newDuration == null){
-			console.println("ERROR: NULL GENERATOR!");
-			throw new IllegalArgumentException("NULL GENERATOR");
-		}
+		if(newDuration == null)
+			fail("NULL GENERATOR");
 		duration = newDuration;
 	}
 	
 	public void setVelocity(Generator newVelocity){
-		if(newVelocity == null){
-			console.println("ERROR: NULL GENERATOR!");
-			throw new IllegalArgumentException("NULL GENERATOR");
-		}
+		if(newVelocity == null)
+			fail("NULL GENERATOR");
 		velocity = newVelocity;
 	}
 	
 	public void setMicroOrg(Generator newMicroOrg){
-		if(newMicroOrg == null){
-			console.println("ERROR: NULL GENERATOR!");
-			throw new IllegalArgumentException("NULL GENERATOR");
-		}
 		microOrg = newMicroOrg;
 	}
 	
 	public void setMacroOrg(Generator newMacroOrg){
-		if(newMacroOrg == null){
-			console.println("ERROR: NULL GENERATOR!");
-			throw new IllegalArgumentException("NULL GENERATOR");
-		}
 		macroOrg = newMacroOrg;
+	}
+	
+	public static void fail(String message){
+		console.println("ERROR: " + message + "\nERROR UNABLE TO CREATE FILE!");
+		
+	}
+	
+	public static void failAndHalt(String message) throws Exception{
+		fail(message);
+		throw new Exception(message);
+	}
+	
+	public static void statusMessage(String message){
+		console.println("STATUS: " + message);
+	}
+	
+	public static void debugMessage(String message){
+		if(DEBUG)
+			console.println("DEBUG: " + message);
 	}
 
 }

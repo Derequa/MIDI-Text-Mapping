@@ -45,10 +45,11 @@ public class Mapper {
 	}
 
 	public void mapFile(File f){
-		if(settings.DEBUG)
-			settings.console.println("STATUS: READING FILE...");
-		if(f == null)
+		Settings.statusMessage("READING FILE...");
+		if(f == null){
+			Settings.fail("NULL FILE GIVEN");
 			throw new NullPointerException("Null file given!");
+		}
 		if(f.isDirectory()){
 			for(File subFile: f.listFiles())
 				mapFile(subFile);
@@ -78,28 +79,38 @@ public class Mapper {
 				settings.getDurationGenerator().step();
 			}
 		} catch (IOException e){
-			if(settings.DEBUG)
-				settings.console.println("STATUS: DONE READING FILE!");
+			Settings.statusMessage("DONE READING FILE!");
 		}
 	}
 	
 	public void organize(){
-		if(settings.DEBUG)
-			settings.console.println("STATUS: ORGANIZING FILE...");
-		if(settings.getMicroOrgGenerator() == null)
-			return;
-		Collections.sort(mappedNotes);
+		Settings.statusMessage("ORGANIZING FILE...");
+		if(settings.getMacroOrgGenerator() != null){
+			Collections.sort(mappedNotes);
+			organize(settings.getMacroOrgGenerator(), settings.getMacroThreshold());
+		}
+		if(settings.getMicroOrgGenerator() != null){
+			Collections.sort(mappedNotes);
+			organize(settings.getMicroOrgGenerator(), settings.getMicroThreshold());
+		}
+		Settings.statusMessage("DONE ORGANIZING FILE!");
+	}
+	
+	private void organize(Generator g, int changeThreshold){
+		int beatCounter = 0;
 		int newestTime = -1;
 		for(Note n : mappedNotes){
 			if(n.getStartingTime() > newestTime){
-				settings.getMicroOrgGenerator().step();
+				g.step();
 				newestTime = n.getStartingTime();
+				beatCounter++;
 			}
-			int delta = settings.getMicroOrgGenerator().getResult().getValue();
-			n.setNote(n.getNote() + delta);
+			if(beatCounter >= changeThreshold){
+				int delta = g.getResult().getValue();
+				n.setNote(n.getNote() + delta);
+				beatCounter = 0;
+			}
 		}
-		if(settings.DEBUG)
-			settings.console.println("STATUS: DONE ORGANIZING FILE!");
 	}
 	
 	public void writeToFile(){
@@ -107,16 +118,13 @@ public class Mapper {
 	}
 	
 	public void writeToFile(String filename){
-		if(settings.DEBUG)
-			settings.console.println("STATUS: WRITING TO FILE...");
+		Settings.statusMessage("WRITING TO FILE...");
 		MidiFile mFile = new MidiFile(filename, settings.getTempo());
-		if(settings.DEBUG)
-			settings.console.println(mappedNotes);
+		Settings.debugMessage(mappedNotes.toString());
 		for(Note n : mappedNotes)
 			mFile.playNote(n);
 		mFile.finish();
-		if(settings.DEBUG)
-			settings.console.println("STATUS: DONE WRITING TO FILE!");
+		Settings.statusMessage("DONE WRITING TO FILE!");
 	}
 	
 	public void importMappingScheme(){
@@ -135,8 +143,7 @@ public class Mapper {
 	}
 	
 	private void importMappingScheme(Scanner s) throws Exception{
-		if(settings.DEBUG)
-			settings.console.println("STATUS: IMPORTING MAPPING SCHEME...");
+		Settings.statusMessage("IMPORTING MAPPING SCHEME...");
 		mappingScheme.clear();
 		while(s.hasNextLine()){
 			Scanner lineScanner = new Scanner(s.nextLine());
@@ -161,7 +168,8 @@ public class Mapper {
 			if((value0 == null) || (noteValue == null)){
 				lineScanner.close();
 				s.close();
-				throw new Exception("Invalid mapping file format!");
+				Settings.fail("INVALID MAPPING FILE FORMAT");
+				throw new Exception("INVALID MAPPING FILE FORMAT");
 			}
 			
 			int int_value0 = Integer.parseInt(value0);
@@ -204,8 +212,7 @@ public class Mapper {
 			lineScanner.close();
 		}
 		s.close();
-		if(settings.DEBUG)
-			settings.console.println("STATUS: DONE IMPORTING MAPPING SCHEME!");
+		Settings.statusMessage("DONE IMPORTING MAPPING SCHEME!");
 	}
 	
 }

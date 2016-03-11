@@ -50,8 +50,8 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 
 	private static final long serialVersionUID = 4829661262223915297L;
 	
-	private Dimension consoleSize = new Dimension(320, 460);
-	private Dimension componentSize = new Dimension(330, 200);
+	private Dimension consoleSize = new Dimension(320, 540);
+	private Dimension cardSize = new Dimension(330, 160);
 	
 	private final String TITLE = "MIDI File Mapper";
 
@@ -90,8 +90,11 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private String str_sub_opt_markov_bal = "Balance Probabilities?";
 	private String str_sub_opt_markov_gen = "Generate Undefined Transitions?";
 	private String str_nosel_output = "output.mid";
+	private String str_change_thres = "Beats Between Changes:";
 	
 	private JSlider sld_tempo = new JSlider(JSlider.HORIZONTAL, Settings.TEMPO_MIN, Settings.TEMPO_MAX, Settings.TEMPO_DEFAULT);
+	private JSlider sld_change_macro = new JSlider(JSlider.HORIZONTAL, Settings.ORG_MIN, Settings.MACRO_ORG_MAX, Settings.MACRO_ORG_DEFAULT);
+	private JSlider sld_change_micro = new JSlider(JSlider.HORIZONTAL, Settings.ORG_MIN, Settings.MICRO_ORG_MAX, Settings.MICRO_ORG_DEFAULT);
 	private JSlider sld_opt_fnoise_macro = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
 	private JSlider sld_opt_fnoise_micro = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
 	private JSlider sld_opt_fnoise_dur = new JSlider(JSlider.HORIZONTAL, FNoise.MIN_DICE, FNoise.MAX_DICE, FNoise.DEFAULT_DICE);
@@ -161,6 +164,10 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JLabel lbl_selected_map = new JLabel("Selected Mapping Scheme:");
 	private JLabel lbl_selected_output = new JLabel("Output File:");
 	private JLabel lbl_tempo = new JLabel("Tempo:");
+	private JLabel lbl_change_macro = new JLabel(str_change_thres);
+	private JLabel lbl_change_micro = new JLabel(str_change_thres);
+	private JLabel lbl_change_macro_val = new JLabel("" + Settings.MACRO_ORG_DEFAULT);
+	private JLabel lbl_change_micro_val = new JLabel("" + Settings.MICRO_ORG_DEFAULT);
 	private JLabel lbl_selected_file_name = new JLabel(str_nosel_file);
 	private JLabel lbl_selected_dir_name = new JLabel(str_nosel_dir);
 	private JLabel lbl_selected_map_name = new JLabel(str_nosel_map);
@@ -274,7 +281,30 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	
 	private JPanel setupCards(JPanel cardPanel, JComboBox<String> comboBox, String borderTitle, PropertyType mode){
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.add(comboBox, BorderLayout.NORTH);
+		if(mode == PropertyType.MACRO_ORG){
+			JPanel sliderCombo = new JPanel(new GridLayout(0, 1));
+			JPanel labels = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			sliderCombo.add(comboBox);
+			labels.add(lbl_change_macro);
+			labels.add(lbl_change_macro_val);
+			sliderCombo.add(labels);
+			sliderCombo.add(sld_change_macro);
+			sliderCombo.setPreferredSize(new Dimension(330, 115));
+			panel.add(sliderCombo, BorderLayout.NORTH);
+		}
+		else if(mode == PropertyType.MICRO_ORG){
+			JPanel sliderCombo = new JPanel(new GridLayout(0, 1));
+			JPanel labels = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			sliderCombo.add(comboBox);
+			labels.add(lbl_change_micro);
+			labels.add(lbl_change_micro_val);
+			sliderCombo.add(labels);
+			sliderCombo.add(sld_change_micro);
+			sliderCombo.setPreferredSize(new Dimension(330, 115));
+			panel.add(sliderCombo, BorderLayout.NORTH);
+		}
+		else
+			panel.add(comboBox, BorderLayout.NORTH);
 		panel.add(cardPanel, BorderLayout.CENTER);
 		comboBox.setSelectedIndex(0);
 		cardPanel.add(assembleFNoiseCard(mode), FNOISE);
@@ -307,6 +337,8 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		sld_opt_fnoise_spc.addChangeListener(this);
 		sld_opt_karplus_buf_macro.addChangeListener(this);
 		sld_opt_karplus_buf_micro.addChangeListener(this);
+		sld_change_macro.addChangeListener(this);
+		sld_change_micro.addChangeListener(this);
 		sld_opt_karplus_buf_dur.addChangeListener(this);
 		sld_opt_karplus_buf_vel.addChangeListener(this);
 		sld_opt_karplus_buf_spc.addChangeListener(this);
@@ -336,6 +368,14 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		btn_markov_sel_file_vel.addActionListener(this);
 		btn_markov_sel_file_spc.addActionListener(this);
 		
+		sld_change_macro.setPaintLabels(true);
+		sld_change_macro.setPaintTicks(true);
+		sld_change_macro.setMajorTickSpacing(16);
+		sld_change_macro.setMinorTickSpacing(4);
+		sld_change_micro.setPaintLabels(true);
+		sld_change_micro.setPaintTicks(true);
+		sld_change_micro.setMajorTickSpacing(4);
+		sld_change_micro.setMinorTickSpacing(1);
 		sld_tempo.setPaintTicks(true);
 		sld_tempo.setPaintLabels(true);
 		sld_tempo.setMajorTickSpacing(50);
@@ -403,7 +443,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 								break;
 		}
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_fnoise));
-		build.setPreferredSize(componentSize);
+		build.setPreferredSize(cardSize);
 		return build;
 	}
 	
@@ -451,7 +491,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 								break;
 		}
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_karplus));
-		build.setPreferredSize(componentSize);
+		build.setPreferredSize(cardSize);
 		return build;
 	}
 
@@ -495,6 +535,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 								break;
 		}
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_triangular));
+		build.setPreferredSize(cardSize);
 		return build;
 	}
 	
@@ -535,6 +576,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 								break;
 		}
 		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_markov));
+		build.setPreferredSize(cardSize);
 		return build;
 	}
 	
@@ -670,8 +712,12 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	
 	private void runMapper(){
 		Settings s = new Settings();
-		s.console = new PrintStream(new JTextOutputStream(gui_console));
-		s.setFileToMap(toMap);
+		Settings.console = new PrintStream(new JTextOutputStream(gui_console));
+		try{
+			s.setFileToMap(toMap);
+		} catch (Exception e){
+			Settings.fail("UNABLE TO SET SOURCE FILE/FILES");
+		}
 		s.mappingScheme = mappingScheme;
 		if(outputFile != null)
 			s.outputFile = outputFile;
@@ -682,8 +728,10 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		try {
 			length = Float.parseFloat(txt_max_length.getText());
 		} catch (Exception e) {
-			s.console.println("STATUS: UNABLE TO READ MAX LENGTH");
+			Settings.fail("UNABLE TO READ MAX LENGTH");
 		}
+		s.setMacroThreshold(sld_change_macro.getValue());
+		s.setMicroThreshold(sld_change_micro.getValue());
 		s.setLength(length);
 		s.setMacroOrg(makeGenerator(combo_org_macro, PropertyType.MACRO_ORG));
 		s.setMicroOrg(makeGenerator(combo_org_micro, PropertyType.MICRO_ORG));
@@ -777,11 +825,11 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	
 	private Markov makeMarkovGenerator(PropertyType mode){
 		switch(mode){
-			case MACRO_ORG:		return new Markov(markov_map_macro, mode);
-			case MICRO_ORG:		return new Markov(markov_map_micro, mode);
-			case DURATION:		return new Markov(markov_map_dur, mode);
-			case VELOCITY:		return new Markov(markov_map_vel, mode);
-			case SPACING:		return new Markov(markov_map_spc, mode);
+			case MACRO_ORG:		return new Markov(markov_map_macro, bx_opt_markov_gen_macro.isSelected(), bx_opt_markov_bal_macro.isSelected(), mode);
+			case MICRO_ORG:		return new Markov(markov_map_micro, bx_opt_markov_gen_micro.isSelected(), bx_opt_markov_bal_micro.isSelected(), mode);
+			case DURATION:		return new Markov(markov_map_dur, bx_opt_markov_gen_dur.isSelected(), bx_opt_markov_bal_dur.isSelected(), mode);
+			case VELOCITY:		return new Markov(markov_map_vel, bx_opt_markov_gen_vel.isSelected(), bx_opt_markov_bal_vel.isSelected(), mode);
+			case SPACING:		return new Markov(markov_map_spc, bx_opt_markov_gen_spc.isSelected(), bx_opt_markov_bal_spc.isSelected(), mode);
 			default:			return null;
 		}
 	}
@@ -826,6 +874,10 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 			lbl_opt_karplus_thres_vel.setText("" + sld_opt_karplus_thres_vel.getValue());
 		else if(e.getSource().equals(sld_opt_karplus_thres_spc))
 			lbl_opt_karplus_thres_spc.setText("" + sld_opt_karplus_thres_spc.getValue());
+		else if(e.getSource().equals(sld_change_macro))
+			lbl_change_macro_val.setText("" + sld_change_macro.getValue());
+		else if(e.getSource().equals(sld_change_micro))
+			lbl_change_micro_val.setText("" + sld_change_micro.getValue());
 	}
 
 	

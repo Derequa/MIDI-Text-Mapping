@@ -22,17 +22,9 @@ public class Organization extends Property implements Comparable<Organization> {
 	
 	private OrgMode mode;
 	private Random r = new Random();
-	
-	// Value is only shift
-	private int centralPitch;
-	
-	public Organization(OrgMode mode){
-		this(mode, 0);
-	}
 
-	public Organization(OrgMode mode, int centralPitch) {
-		super(centralPitch);
-		this.centralPitch = centralPitch;
+	public Organization(OrgMode mode) {
+		super(0);
 		setMode(mode);
 	}
 	
@@ -49,26 +41,39 @@ public class Organization extends Property implements Comparable<Organization> {
 
 	@Override
 	public void randomize() {
-		setValueToClosest(r.nextInt(MAX_SHIFT));
+		switch(mode){
+			case MACRO:		setValueToClosest(r.nextInt(17) - 8);
+							break;
+			case MICRO:		setValueToClosest(r.nextInt(MAX_SHIFT));
+							break;
+			default:		break;
+		}
+		
 	}
 
 	@Override
 	public void setValueToClosest(int newValue) {
-		int minDist = Integer.MAX_VALUE;
-		int defaultIndex = IDX_NO_CHANGE;
-		for(int i = 0 ; i < SHIFTS.length ; i++){
-			if(Math.abs(newValue - SHIFTS[i]) < minDist){
-				defaultIndex = i;
-				minDist = Math.abs(newValue - SHIFTS[i]);
-			}
+		switch(mode){
+		case MACRO:		value = newValue;
+						break;
+		case MICRO:		int minDist = Integer.MAX_VALUE;
+						int defaultIndex = IDX_NO_CHANGE;
+						for(int i = 0 ; i < SHIFTS.length ; i++){
+							if(Math.abs(newValue - SHIFTS[i]) < minDist){
+								defaultIndex = i;
+								minDist = Math.abs(newValue - SHIFTS[i]);
+							}
+						}
+						value = SHIFTS[defaultIndex];
+						break;
+		default:		break;
 		}
-		value = SHIFTS[defaultIndex];
+		
 	}
 
 	@Override
 	public int compareTo(Organization arg0) {
-		// TODO Auto-generated method stub
-		return 0;
+		return (new Integer(value)).compareTo(new Integer(arg0.getValue()));
 	}
 
 }
