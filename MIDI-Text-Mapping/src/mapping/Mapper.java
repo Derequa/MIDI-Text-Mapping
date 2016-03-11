@@ -152,8 +152,8 @@ public class Mapper {
 			if((value0 == null) || (noteValue == null)){
 				lineScanner.close();
 				s.close();
-				Settings.fail("INVALID MAPPING FILE FORMAT");
-				throw new Exception("INVALID MAPPING FILE FORMAT");
+				Settings.fail("INVALID MAPPING FILE FORMAT!");
+				throw new Exception("INVALID MAPPING FILE FORMAT!");
 			}
 			
 			int int_value0 = Integer.parseInt(value0);

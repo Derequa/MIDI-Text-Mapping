@@ -716,7 +716,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		try{
 			s.setFileToMap(toMap);
 		} catch (Exception e){
-			Settings.fail("UNABLE TO SET SOURCE FILE/FILES");
+			Settings.fail("UNABLE TO SET SOURCE FILE/FILES!");
 		}
 		s.mappingScheme = mappingScheme;
 		if(outputFile != null)

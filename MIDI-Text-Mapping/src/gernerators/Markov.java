@@ -55,7 +55,7 @@ public class Markov implements Generator {
 			try {
 				importScheme(new Scanner(scheme), generatesTransitions, balance);
 			} catch (FileNotFoundException e) {
-				Settings.fail("MARKOV MAPPING SCHEME FILE NOT FOUND");
+				Settings.fail("MARKOV MAPPING SCHEME FILE NOT FOUND!");
 			}
 		}
 		Settings.debugMessage(this.toString());
