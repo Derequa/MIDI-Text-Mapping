@@ -8,15 +8,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Scanner;
-
-import javax.sound.sampled.Line;
-
 import gernerators.properties.Organization;
 import gernerators.properties.Organization.OrgMode;
 import gernerators.properties.Property;
 import gernerators.properties.Property.PropertyType;
 import gernerators.properties.Time;
 import gernerators.properties.Velocity;
+import mapping.DefaultMaps;
 import mapping.Settings;
 
 public class Markov implements Generator {
@@ -29,38 +27,7 @@ public class Markov implements Generator {
 	private Random r = new Random();
 	PropertyType mode;
 	
-	private String defaultMicroMapping = "states:\n"
-								  + "0 0\n"
-								  + "1 4\n"
-								  + "2 7\n"
-								  + "3 -4\n"
-								  + "4 -7\n"
-								  + "transitions:\n"
-								  + "0 0 .2\n"
-								  + "0 1 .3\n"
-								  + "0 2 .1\n"
-								  + "0 3 .2\n"
-								  + "0 4 .2\n"
-								  + "1 0 .4\n"
-								  + "1 1 .1\n"
-								  + "1 2 .1\n"
-								  + "1 3 .2\n"
-								  + "1 4 .2\n"
-								  + "2 0 .5\n"
-								  + "2 1 .1\n"
-								  + "2 2 .1\n"
-								  + "2 3 .1\n"
-								  + "2 4 .2\n"
-								  + "3 0 .2\n"
-								  + "3 1 .2\n"
-								  + "3 2 .2\n"
-								  + "3 3 .2\n"
-								  + "3 4 .2\n"
-								  + "4 0 .1\n"
-								  + "4 1 .6\n"
-								  + "4 2 .1\n"
-								  + "4 3 .1\n"
-								  + "4 4 .1\n";
+	
 	
 	public Markov(PropertyType mode){
 		this.mode = mode;
@@ -70,18 +37,17 @@ public class Markov implements Generator {
 		this.mode = mode;
 		if(scheme == null){
 			switch(mode){
-			case MACRO_ORG:
-				break;
-			case MICRO_ORG:		importScheme(new Scanner(defaultMicroMapping), generatesTransitions, balance);
-				break;
-			case DURATION:
-				break;
-			case VELOCITY:
-				break;
-			case SPACING:
-				break;
-			default:
-				break;
+			case MACRO_ORG:		importScheme(new Scanner(DefaultMaps.defaultOrgMapping), generatesTransitions, balance);
+								break;
+			case MICRO_ORG:		importScheme(new Scanner(DefaultMaps.defaultOrgMapping), generatesTransitions, balance);
+								break;
+			case DURATION:		importScheme(new Scanner(DefaultMaps.defaultTimeMapping), generatesTransitions, balance);
+								break;
+			case VELOCITY:		importScheme(new Scanner(DefaultMaps.defaultVelMapping), generatesTransitions, balance);
+								break;
+			case SPACING:		importScheme(new Scanner(DefaultMaps.defaultTimeMapping), generatesTransitions, balance);
+								break;
+			default:			break;
 			
 			}
 		}

@@ -9,16 +9,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Scanner;
-
-import frontside.Tester;
-import gernerators.FNoise;
 import gernerators.Generator;
-import gernerators.Generator.GeneratorType;
-import gernerators.KarplusStrong;
-import gernerators.Markov;
-import gernerators.TriangularDist;
-import gernerators.properties.Property.PropertyType;
-import gernerators.properties.Velocity;
 
 public class Mapper {
 	
@@ -28,13 +19,6 @@ public class Mapper {
 	private HashMap<Integer, LinkedList<Integer>> mappingScheme = new HashMap<Integer, LinkedList<Integer>>();
 	
 	public Settings settings = new Settings();
-	
-	private String defaultMapping = "0 - 64 50\n"
-								  + "0 - 64 67\n"
-								  + "0 - 64 72\n"
-								  + "65 - 127 55\n"
-								  + "65 - 127 64\n"
-								  + "65 - 127 67\n";
 	
 	public Mapper(Settings s) {
 		settings = s;
@@ -47,8 +31,8 @@ public class Mapper {
 	public void mapFile(File f){
 		Settings.statusMessage("READING FILE...");
 		if(f == null){
-			Settings.fail("NULL FILE GIVEN");
-			throw new NullPointerException("Null file given!");
+			Settings.fail("NULL FILE GIVEN!");
+			throw new NullPointerException("NULL FILE GIVEN!");
 		}
 		if(f.isDirectory()){
 			for(File subFile: f.listFiles())
@@ -134,7 +118,7 @@ public class Mapper {
 	public void importMappingScheme(File f){
 		try{
 			if(f == null)
-				importMappingScheme(new Scanner(defaultMapping));
+				importMappingScheme(new Scanner(DefaultMaps.defaultMapping));
 			else
 				importMappingScheme(new Scanner(f));
 		} catch (Exception e) {

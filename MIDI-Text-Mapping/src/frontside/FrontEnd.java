@@ -2,28 +2,19 @@ package frontside;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.PrintStream;
-import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.LinkedList;
-
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -34,10 +25,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 import gernerators.FNoise;
 import gernerators.Generator;
-import gernerators.Generator.GeneratorType;
 import gernerators.KarplusStrong;
 import gernerators.Markov;
 import gernerators.TriangularDist;
@@ -117,6 +106,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JComboBox<String> combo_vel = new JComboBox<String>(std_strings);
 	private JComboBox<String> combo_spc = new JComboBox<String>(std_strings);
 	
+	private JButton btn_clear_console = new JButton("Clear Console");
 	private JButton btn_select_mapper = new JButton(str_btn_map);
 	private JButton btn_select_file = new JButton("Set Source File");
 	private JButton btn_select_dir = new JButton("Set Source Folder");
@@ -144,6 +134,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JRadioButton btn_opt_triangular_right_vel = new JRadioButton();
 	private JRadioButton btn_opt_triangular_right_spc = new JRadioButton();
 	
+	private JCheckBox bx_debug = new JCheckBox("View Debug Messages");
 	private JCheckBox bx_opt_markov_bal_macro = new JCheckBox(str_sub_opt_markov_bal);
 	private JCheckBox bx_opt_markov_bal_micro = new JCheckBox(str_sub_opt_markov_bal);
 	private JCheckBox bx_opt_markov_bal_dur = new JCheckBox(str_sub_opt_markov_bal);
@@ -207,7 +198,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JPanel pnl_cards_vel = new JPanel(new CardLayout());
 	private JPanel pnl_cards_spc = new JPanel(new CardLayout());
 	private JPanel pnl_options = new JPanel(new GridLayout(0, 3));
-	private JPanel pnl_console = new JPanel();
+	private JPanel pnl_console = new JPanel(new BorderLayout());
 	
 	private File toMap;
 	private File mappingScheme;
@@ -275,7 +266,11 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		consolePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		consolePane.setPreferredSize(consoleSize);
 		pnl_console.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_console));
-		pnl_console.add(consolePane);
+		pnl_console.add(consolePane, BorderLayout.CENTER);
+		JPanel consoleOptions = new JPanel(new GridLayout(1, 0));
+		consoleOptions.add(bx_debug);
+		consoleOptions.add(btn_clear_console);
+		pnl_console.add(consoleOptions, BorderLayout.SOUTH);
 		c.add(pnl_console, BorderLayout.WEST);
 	}
 	
@@ -367,6 +362,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		btn_markov_sel_file_dur.addActionListener(this);
 		btn_markov_sel_file_vel.addActionListener(this);
 		btn_markov_sel_file_spc.addActionListener(this);
+		btn_clear_console.addActionListener(this);
 		
 		sld_change_macro.setPaintLabels(true);
 		sld_change_macro.setPaintTicks(true);
@@ -382,6 +378,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		sld_tempo.setMinorTickSpacing(10);
 		gui_console.setEditable(false);
 		txt_max_length.setPreferredSize(new Dimension(50, 20));
+		txt_max_length.setText("5");
 		
 		setupSlider(sld_opt_fnoise_macro, 0);
 		setupSlider(sld_opt_fnoise_micro, 0);
@@ -644,35 +641,35 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		else if(e.getSource().equals(btn_markov_sel_file_macro)){
 			File f = selectFile(JFileChooser.FILES_ONLY);
 			if(f != null){
-				outputFile = f;
+				markov_map_macro = f;
 				lbl_opt_markov_sel_file_name_macro.setText(f.getName());
 			}
 		}
 		else if(e.getSource().equals(btn_markov_sel_file_micro)){
 			File f = selectFile(JFileChooser.FILES_ONLY);
 			if(f != null){
-				outputFile = f;
+				markov_map_micro = f;
 				lbl_opt_markov_sel_file_name_micro.setText(f.getName());
 			}
 		}
 		else if(e.getSource().equals(btn_markov_sel_file_dur)){
 			File f = selectFile(JFileChooser.FILES_ONLY);
 			if(f != null){
-				outputFile = f;
+				markov_map_dur = f;
 				lbl_opt_markov_sel_file_name_dur.setText(f.getName());
 			}
 		}
 		else if(e.getSource().equals(btn_markov_sel_file_vel)){
 			File f = selectFile(JFileChooser.FILES_ONLY);
 			if(f != null){
-				outputFile = f;
+				markov_map_vel = f;
 				lbl_opt_markov_sel_file_name_vel.setText(f.getName());
 			}
 		}
 		else if(e.getSource().equals(btn_markov_sel_file_spc)){
 			File f = selectFile(JFileChooser.FILES_ONLY);
 			if(f != null){
-				outputFile = f;
+				markov_map_spc = f;
 				lbl_opt_markov_sel_file_name_spc.setText(f.getName());
 			}
 		}
@@ -708,11 +705,14 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 			setSelectedButtonSet(btn_opt_triangular_right_spc, btn_opt_triangular_left_spc, btn_opt_triangular_norm_spc);
 		else if(e.getSource().equals(btn_generate) && btn_generate.isEnabled())
 			runMapper();
+		else if(e.getSource().equals(btn_clear_console))
+			gui_console.setText("");
 	}
 	
 	private void runMapper(){
 		Settings s = new Settings();
 		Settings.console = new PrintStream(new JTextOutputStream(gui_console));
+		Settings.debug = bx_debug.isSelected();
 		try{
 			s.setFileToMap(toMap);
 		} catch (Exception e){
@@ -728,7 +728,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		try {
 			length = Float.parseFloat(txt_max_length.getText());
 		} catch (Exception e) {
-			Settings.fail("UNABLE TO READ MAX LENGTH");
+			Settings.fail("UNABLE TO READ MAX LENGTH! USING DEFAULT: UNLIMITED LENGTH SET");
 		}
 		s.setMacroThreshold(sld_change_macro.getValue());
 		s.setMicroThreshold(sld_change_micro.getValue());
@@ -882,6 +882,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 
 	
 	public static void main(String[] args){
+		@SuppressWarnings("unused")
 		FrontEnd f = new FrontEnd();
 	}
 }

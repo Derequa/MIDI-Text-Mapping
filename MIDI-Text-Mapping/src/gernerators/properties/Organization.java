@@ -11,14 +11,14 @@ public class Organization extends Property implements Comparable<Organization> {
 	
 	private static final int MAX_SHIFT = 7;
 	//private static final float MODE_SHIFT_PROB = .4f;
-	private static final int[] SHIFTS = {0, 4, 7, -4, -7, 3 , -3};
-	private static final int IDX_NO_CHANGE = 0;
-	private static final int IDX_UP_CONT0 = 1;
-	private static final int IDX_UP_CONT1 = 2;
-	private static final int IDX_DWN_CONT0 = 3;
-	private static final int IDX_DWN_CONT1 = 4;
-	private static final int IDX_UP_CHNG0 = 5;
-	private static final int IDX_DWN_CHNG0 = 6;
+	public static final int[] SHIFTS = {0, 4, 7, -4, -7, 3 , -3};
+	public static final int IDX_NO_CHANGE = 0;
+	public static final int IDX_UP_CONT0 = 1;
+	public static final int IDX_UP_CONT1 = 2;
+	public static final int IDX_DWN_CONT0 = 3;
+	public static final int IDX_DWN_CONT1 = 4;
+	public static final int IDX_UP_CHNG0 = 5;
+	public static final int IDX_DWN_CHNG0 = 6;
 	
 	private OrgMode mode;
 	private Random r = new Random();

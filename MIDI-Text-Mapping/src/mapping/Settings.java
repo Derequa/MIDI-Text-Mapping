@@ -13,7 +13,7 @@ import gernerators.properties.Property.PropertyType;
 
 public class Settings {
 	
-	public final static boolean DEBUG = true;
+	public static boolean debug = true;
 	
 	public static final int TEMPO_MAX = 330;
 	public static final int TEMPO_MIN = 30;
@@ -241,12 +241,12 @@ public class Settings {
 	}
 	
 	public static void fail(String message){
-		console.println("ERROR: " + message + "\nERROR UNABLE TO CREATE FILE!");
-		
+		console.println("ERROR: " + message);
 	}
 	
 	public static void failAndHalt(String message) throws Exception{
 		fail(message);
+		fail("UNABLE TO CREATE FILE!");
 		throw new Exception(message);
 	}
 	
@@ -255,7 +255,7 @@ public class Settings {
 	}
 	
 	public static void debugMessage(String message){
-		if(DEBUG)
+		if(debug)
 			console.println("DEBUG: " + message);
 	}
 

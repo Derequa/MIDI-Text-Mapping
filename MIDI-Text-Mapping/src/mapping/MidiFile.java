@@ -2,7 +2,6 @@ package mapping;
 
 
 import java.io.*;
-import java.nio.ByteBuffer;
 
 import javax.sound.midi.*; // package for all midi classes
 

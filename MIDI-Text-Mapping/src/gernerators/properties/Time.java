@@ -11,19 +11,19 @@ public class Time extends Property implements Comparable<Property> {
 	public static final int TICKS_PER_EIGTH = TICKS_PER_QUARTER / 2;
 	public static final int TICKS_PER_SIXTEENTH = TICKS_PER_EIGTH / 2;
 	
-	private static final int[] TIMINGS = {TICKS_PER_SIXTEENTH,
+	public static final int[] TIMINGS = {TICKS_PER_SIXTEENTH,
 										 TICKS_PER_EIGTH,
 										 TICKS_PER_QUARTER,
 										 TICKS_PER_HALF,
 										 TICKS_PER_WHOLE,
 										 NO_TICK};
 	
-	private static final int EIGTH_INDEX = 0;
-	private static final int SIXTEENTH_INDEX = 1;
-	private static final int QUARTER_INDEX = 2;
-	private static final int HALF_INDEX = 3;
-	private static final int WHOLE_INDEX = 4;
-	private static final int NO_TICK_INDEX = 5;
+	public static final int EIGTH_INDEX = 0;
+	public static final int SIXTEENTH_INDEX = 1;
+	public static final int QUARTER_INDEX = 2;
+	public static final int HALF_INDEX = 3;
+	public static final int WHOLE_INDEX = 4;
+	public static final int NO_TICK_INDEX = 5;
 	
 	private static Random r = new Random(System.nanoTime());
 	
