@@ -377,6 +377,8 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		sld_tempo.setMajorTickSpacing(50);
 		sld_tempo.setMinorTickSpacing(10);
 		gui_console.setEditable(false);
+		gui_console.setLineWrap(true);
+		gui_console.setWrapStyleWord(true);
 		txt_max_length.setPreferredSize(new Dimension(50, 20));
 		txt_max_length.setText("5");
 		
@@ -739,10 +741,12 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		s.setVelocity(makeGenerator(combo_vel, PropertyType.VELOCITY));
 		s.setSpacing(makeGenerator(combo_spc, PropertyType.SPACING));
 		Mapper m = new Mapper(s);
-		m.importMappingScheme();
-		m.mapSetFile();
-		m.organize();
-		m.writeToFile();
+		try {
+			m.importMappingScheme();
+			m.mapFile();
+			m.organize();
+			m.writeToFile();
+		} catch (Exception e) {}
 	}
 	
 	private Generator makeGenerator(JComboBox<String> box, PropertyType mode){

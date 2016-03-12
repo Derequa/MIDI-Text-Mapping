@@ -1,7 +1,13 @@
 package mapping;
 
+/**
+ * This class contains string constants for default mappings.
+ * @author Derek Batts - dsbatts@ncsu.edu
+ *
+ */
 public class DefaultMaps {
 	
+	/** The default note mapping */
 	public static final String defaultMapping = "0 - 64 50\n"
 								  + "0 - 64 67\n"
 								  + "0 - 64 72\n"
@@ -9,6 +15,7 @@ public class DefaultMaps {
 								  + "65 - 127 64\n"
 								  + "65 - 127 67\n";
 	
+	/** The default Markov mapping for organizing */
 	public static final String defaultOrgMapping = "states:\n"
 												 + "0 0\n"
 												 + "1 4\n"
@@ -39,6 +46,7 @@ public class DefaultMaps {
 												 + "4 3 .1\n"
 												 + "4 4 .1\n";
 	
+	/** The default Markov mapping for note duration and spacing */
 	public static final String defaultTimeMapping = "states:\n"
 												  + "0 4\n"
 												  + "1 2\n"
@@ -72,6 +80,7 @@ public class DefaultMaps {
 												  + "4 3 .1\n"
 												  + "4 4 .1\n";
 	
+	/** The default Markov mapping for velocity */
 	public static final String defaultVelMapping = "states:\n"
 												 + "0 96\n"
 												 + "1 116\n"
