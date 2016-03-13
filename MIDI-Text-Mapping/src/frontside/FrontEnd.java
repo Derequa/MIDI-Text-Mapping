@@ -25,13 +25,18 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import gernerators.Constant;
 import gernerators.FNoise;
 import gernerators.Generator;
 import gernerators.KarplusStrong;
 import gernerators.Markov;
 import gernerators.TriangularDist;
 import gernerators.TriangularDist.DistributionScheme;
+import gernerators.properties.Velocity;
+import gernerators.properties.Property;
 import gernerators.properties.Property.PropertyType;
+import gernerators.properties.Time;
 import mapping.Mapper;
 import mapping.Settings;
 
@@ -49,11 +54,15 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private final String TRIANGULAR = "Triangular";
 	private final String MARKOV = "Markov";
 	private final String NONE = "None (Mapping Only)";
+	private final String CONSTANT = "Constant";
+	private final String GENERATED = "Generation Mode";
+	private final String FILE_MAP = "File-Mapping Mode";
 	
+	private String[] opt_strings = {FILE_MAP, GENERATED};
 	private String[] org_strings = {FNOISE, KARPLUS, TRIANGULAR, MARKOV, NONE};
-	private String[] std_strings = {FNOISE, KARPLUS, TRIANGULAR, MARKOV};
+	private String[] std_strings = {FNOISE, KARPLUS, TRIANGULAR, MARKOV, CONSTANT};
 	
-	private String str_options = "File Input";
+	private String str_options = "Mode";
 	private String str_console = "Console Output";
 	private String str_org_macro = "Compositional Method (High-level)";
 	private String str_org_micro = "Compositional Method (Low-level)";
@@ -70,6 +79,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private String str_opt_triangular = TRIANGULAR + " Options";
 	private String str_opt_markov = MARKOV + " Options";
 	private String str_opt_none = "No Options";
+	private String str_opt_constant = "Options";
 	private String str_sub_opt_fnoise = "Number of Dice:";
 	private String str_sub_opt_karplus_buf = "Buffer Size:";
 	private String str_sub_opt_karplus_thres = "Reset Threshold:";
@@ -99,7 +109,9 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JSlider sld_opt_karplus_thres_dur = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_THRESHOLD, KarplusStrong.MAX_THRESHOLD, KarplusStrong.DEFAULT_THRESHOLD);
 	private JSlider sld_opt_karplus_thres_vel = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_THRESHOLD, KarplusStrong.MAX_THRESHOLD, KarplusStrong.DEFAULT_THRESHOLD);
 	private JSlider sld_opt_karplus_thres_spc = new JSlider(JSlider.HORIZONTAL, KarplusStrong.MIN_THRESHOLD, KarplusStrong.MAX_THRESHOLD, KarplusStrong.DEFAULT_THRESHOLD);
+	private JSlider sld_opt_constant_vel = new JSlider(JSlider.HORIZONTAL, Velocity.MIN_VELOCITY, Velocity.MAX_VELOCITY, Velocity.DEFAULT_VELOCITY);
 	
+	private JComboBox<String> combo_opt = new JComboBox<String>(opt_strings);
 	private JComboBox<String> combo_org_macro = new JComboBox<String>(org_strings);
 	private JComboBox<String> combo_org_micro = new JComboBox<String>(org_strings);
 	private JComboBox<String> combo_dur = new JComboBox<String>(std_strings);
@@ -133,6 +145,16 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JRadioButton btn_opt_triangular_right_dur = new JRadioButton();
 	private JRadioButton btn_opt_triangular_right_vel = new JRadioButton();
 	private JRadioButton btn_opt_triangular_right_spc = new JRadioButton();
+	private JRadioButton btn_opt_constant_dur_sixteenth = new JRadioButton("Sixteenth Note");
+	private JRadioButton btn_opt_constant_dur_eigth = new JRadioButton("Eigth Note");
+	private JRadioButton btn_opt_constant_dur_quarter = new JRadioButton("Quarter Note");
+	private JRadioButton btn_opt_constant_dur_half = new JRadioButton("Half Note");
+	private JRadioButton btn_opt_constant_dur_whole = new JRadioButton("Whole Note");
+	private JRadioButton btn_opt_constant_spc_sixteenth = new JRadioButton("Sixteenth Note");
+	private JRadioButton btn_opt_constant_spc_eigth = new JRadioButton("Eigth Note");
+	private JRadioButton btn_opt_constant_spc_quarter = new JRadioButton("Quarter Note");
+	private JRadioButton btn_opt_constant_spc_half = new JRadioButton("Half Note");
+	private JRadioButton btn_opt_constant_spc_whole = new JRadioButton("Whole Note");
 	
 	private JCheckBox bx_debug = new JCheckBox("View Debug Messages");
 	private JCheckBox bx_opt_markov_bal_macro = new JCheckBox(str_sub_opt_markov_bal);
@@ -149,6 +171,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	protected JTextArea gui_console = new JTextArea(50, 50);
 	
 	private JTextField txt_max_length = new JTextField();
+	private JTextField txt_midinote = new JTextField();
 	
 	private JLabel lbl_selected_file = new JLabel("Selected File:");
 	private JLabel lbl_selected_dir = new JLabel("Selected Directory:");
@@ -189,7 +212,10 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JLabel lbl_opt_markov_sel_file_name_dur = new JLabel(str_nosel_file);
 	private JLabel lbl_opt_markov_sel_file_name_vel = new JLabel(str_nosel_file);
 	private JLabel lbl_opt_markov_sel_file_name_spc = new JLabel(str_nosel_file);
+	private JLabel lbl_opt_constant_vel = new JLabel("Velocity:");
+	private JLabel lbl_opt_constant_vel_val = new JLabel("" + Velocity.DEFAULT_VELOCITY);
 	private JLabel lbl_max_length = new JLabel("Max Length (Minutes):");
+	private JLabel lbl_midinote = new JLabel("Starting MIDI Note Value:");
 	
 	// Panels for options, combo boxes, and their associated card-layout panels
 	private JPanel pnl_cards_org_macro = new JPanel(new CardLayout());
@@ -197,7 +223,9 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 	private JPanel pnl_cards_dur = new JPanel(new CardLayout());
 	private JPanel pnl_cards_vel = new JPanel(new CardLayout());
 	private JPanel pnl_cards_spc = new JPanel(new CardLayout());
-	private JPanel pnl_options = new JPanel(new GridLayout(0, 3));
+	private JPanel pnl_options_cards = new JPanel(new CardLayout());
+	private JPanel pnl_options_file = new JPanel(new GridLayout(0, 3));
+	private JPanel pnl_options_note = new JPanel();
 	private JPanel pnl_console = new JPanel(new BorderLayout());
 	
 	private File toMap;
@@ -223,20 +251,27 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		Container c = this.getContentPane();
 		c.setLayout(new BorderLayout());
 		
-		pnl_options.add(btn_select_file);
-		pnl_options.add(lbl_selected_file);
-		pnl_options.add(lbl_selected_file_name);
-		pnl_options.add(btn_select_dir);
-		pnl_options.add(lbl_selected_dir);
-		pnl_options.add(lbl_selected_dir_name);
-		pnl_options.add(btn_select_mapper);
-		pnl_options.add(lbl_selected_map);
-		pnl_options.add(lbl_selected_map_name);
-		pnl_options.add(btn_select_output);
-		pnl_options.add(lbl_selected_output);
-		pnl_options.add(lbl_selected_output_name);
-		pnl_options.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_options));
-		c.add(pnl_options, BorderLayout.NORTH);
+		JPanel options = new JPanel(new BorderLayout());
+		options.add(combo_opt, BorderLayout.NORTH);
+		pnl_options_file.add(btn_select_file);
+		pnl_options_file.add(lbl_selected_file);
+		pnl_options_file.add(lbl_selected_file_name);
+		pnl_options_file.add(btn_select_dir);
+		pnl_options_file.add(lbl_selected_dir);
+		pnl_options_file.add(lbl_selected_dir_name);
+		pnl_options_file.add(btn_select_mapper);
+		pnl_options_file.add(lbl_selected_map);
+		pnl_options_file.add(lbl_selected_map_name);
+		pnl_options_file.add(btn_select_output);
+		pnl_options_file.add(lbl_selected_output);
+		pnl_options_file.add(lbl_selected_output_name);
+		pnl_options_note.add(lbl_midinote);
+		pnl_options_note.add(txt_midinote);
+		pnl_options_cards.add(pnl_options_file, FILE_MAP);
+		pnl_options_cards.add(pnl_options_note, GENERATED);
+		options.add(pnl_options_cards);
+		options.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_options));
+		c.add(options, BorderLayout.NORTH);
 		
 		JPanel genAndTemp = new JPanel(new GridLayout(0, 1));
 		JPanel tempoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -306,6 +341,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		cardPanel.add(assembleKarplusCard(mode), KARPLUS);
 		cardPanel.add(assembleTriangularCard(mode), TRIANGULAR);
 		cardPanel.add(assembleMarkovCard(mode), MARKOV);
+		cardPanel.add(assembleConstantCard(mode), CONSTANT);
 		cardPanel.add(assembleNoneCard(), NONE);
 		CardLayout layout = (CardLayout) cardPanel.getLayout();
 		layout.show(cardPanel, (String) comboBox.getSelectedItem());
@@ -324,6 +360,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		combo_dur.addActionListener(this);
 		combo_vel.addActionListener(this);
 		combo_spc.addActionListener(this);
+		combo_opt.addActionListener(this);
 		sld_tempo.addChangeListener(this);
 		sld_opt_fnoise_macro.addChangeListener(this);
 		sld_opt_fnoise_micro.addChangeListener(this);
@@ -363,6 +400,19 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		btn_markov_sel_file_vel.addActionListener(this);
 		btn_markov_sel_file_spc.addActionListener(this);
 		btn_clear_console.addActionListener(this);
+		btn_opt_constant_dur_sixteenth.addActionListener(this);
+		btn_opt_constant_dur_eigth.addActionListener(this);
+		btn_opt_constant_dur_quarter.addActionListener(this);
+		btn_opt_constant_dur_half.addActionListener(this);
+		btn_opt_constant_dur_whole.addActionListener(this);
+		btn_opt_constant_spc_sixteenth.addActionListener(this);
+		btn_opt_constant_spc_eigth.addActionListener(this);
+		btn_opt_constant_spc_quarter.addActionListener(this);
+		btn_opt_constant_spc_half.addActionListener(this);
+		btn_opt_constant_spc_whole.addActionListener(this);
+		sld_opt_constant_vel.addChangeListener(this);
+		btn_opt_constant_dur_quarter.setSelected(true);
+		btn_opt_constant_spc_quarter.setSelected(true);
 		
 		sld_change_macro.setPaintLabels(true);
 		sld_change_macro.setPaintTicks(true);
@@ -372,6 +422,10 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		sld_change_micro.setPaintTicks(true);
 		sld_change_micro.setMajorTickSpacing(4);
 		sld_change_micro.setMinorTickSpacing(1);
+		sld_opt_constant_vel.setPaintLabels(true);
+		sld_opt_constant_vel.setPaintTicks(true);
+		sld_opt_constant_vel.setMajorTickSpacing(10);
+		sld_opt_constant_vel.setMinorTickSpacing(2);
 		sld_tempo.setPaintTicks(true);
 		sld_tempo.setPaintLabels(true);
 		sld_tempo.setMajorTickSpacing(50);
@@ -381,6 +435,9 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		gui_console.setWrapStyleWord(true);
 		txt_max_length.setPreferredSize(new Dimension(50, 20));
 		txt_max_length.setText("5");
+		txt_midinote.setPreferredSize(new Dimension(50, 20));
+		txt_midinote.setText("60");
+		txt_midinote.addActionListener(this);
 		
 		setupSlider(sld_opt_fnoise_macro, 0);
 		setupSlider(sld_opt_fnoise_micro, 0);
@@ -586,6 +643,37 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		return build;
 	}
 	
+	private JPanel assembleConstantCard(PropertyType mode){
+		JPanel build = new JPanel();
+		switch(mode){
+			case DURATION:		build.setLayout(new GridLayout(0, 1));
+								build.add(btn_opt_constant_dur_sixteenth);
+								build.add(btn_opt_constant_dur_eigth);
+								build.add(btn_opt_constant_dur_quarter);
+								build.add(btn_opt_constant_dur_half);
+								build.add(btn_opt_constant_dur_whole);
+								break;
+			case VELOCITY:		build.setLayout(new GridLayout(0, 1));
+								JPanel p = new JPanel(new FlowLayout(FlowLayout.LEFT));
+								p.add(lbl_opt_constant_vel);
+								p.add(lbl_opt_constant_vel_val);
+								build.add(p);
+								build.add(sld_opt_constant_vel);
+								break;
+			case SPACING:		build.setLayout(new GridLayout(0, 1));
+								build.add(btn_opt_constant_spc_sixteenth);
+								build.add(btn_opt_constant_spc_eigth);
+								build.add(btn_opt_constant_spc_quarter);
+								build.add(btn_opt_constant_spc_half);
+								build.add(btn_opt_constant_spc_whole);
+								break;
+			default:
+				break;
+		}
+		build.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), str_opt_constant));
+		return build;
+	}
+	
 	private File selectFile(int mode){
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(mode);
@@ -608,6 +696,10 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 			((CardLayout) pnl_cards_vel.getLayout()).show(pnl_cards_vel, (String) combo_vel.getSelectedItem());
 		else if(e.getSource().equals(combo_spc))
 			((CardLayout) pnl_cards_spc.getLayout()).show(pnl_cards_spc, (String) combo_spc.getSelectedItem());
+		else if(e.getSource().equals(combo_opt)){
+			((CardLayout) pnl_options_cards.getLayout()).show(pnl_options_cards, (String) combo_opt.getSelectedItem());
+			getGeneratedState();
+		}
 		else if(e.getSource().equals(btn_select_file)){
 			File f = selectFile(JFileChooser.FILES_ONLY);
 			if(f != null){
@@ -615,7 +707,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 				lbl_selected_file_name.setText(f.getName());
 				lbl_selected_dir_name.setText(str_nosel_dir);
 			}
-			btn_generate.setEnabled(toMap != null);
+			getGeneratedState();
 		}
 		else if(e.getSource().equals(btn_select_dir)){
 			File f = selectFile(JFileChooser.DIRECTORIES_ONLY);
@@ -624,7 +716,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 				lbl_selected_file_name.setText(str_nosel_file);
 				lbl_selected_dir_name.setText(f.getName());
 			}
-			btn_generate.setEnabled(toMap != null);
+			getGeneratedState();
 		}
 		else if(e.getSource().equals(btn_select_mapper)){
 			File f = selectFile(JFileChooser.FILES_ONLY);
@@ -709,6 +801,37 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 			runMapper();
 		else if(e.getSource().equals(btn_clear_console))
 			gui_console.setText("");
+		else if(e.getSource().equals(btn_opt_constant_dur_sixteenth))
+			setSelectedButtonSet(btn_opt_constant_dur_sixteenth, btn_opt_constant_dur_eigth, btn_opt_constant_dur_quarter, btn_opt_constant_dur_half, btn_opt_constant_dur_whole);
+		else if(e.getSource().equals(btn_opt_constant_dur_eigth))
+			setSelectedButtonSet(btn_opt_constant_dur_eigth, btn_opt_constant_dur_sixteenth, btn_opt_constant_dur_quarter, btn_opt_constant_dur_half, btn_opt_constant_dur_whole);
+		else if(e.getSource().equals(btn_opt_constant_dur_quarter))
+			setSelectedButtonSet(btn_opt_constant_dur_quarter, btn_opt_constant_dur_eigth, btn_opt_constant_dur_sixteenth, btn_opt_constant_dur_half, btn_opt_constant_dur_whole);
+		else if(e.getSource().equals(btn_opt_constant_dur_half))
+			setSelectedButtonSet(btn_opt_constant_dur_half, btn_opt_constant_dur_eigth, btn_opt_constant_dur_quarter, btn_opt_constant_dur_sixteenth, btn_opt_constant_dur_whole);
+		else if(e.getSource().equals(btn_opt_constant_dur_whole))
+			setSelectedButtonSet(btn_opt_constant_dur_whole, btn_opt_constant_dur_eigth, btn_opt_constant_dur_quarter, btn_opt_constant_dur_half, btn_opt_constant_dur_sixteenth);
+		else if(e.getSource().equals(btn_opt_constant_spc_sixteenth))
+			setSelectedButtonSet(btn_opt_constant_spc_sixteenth, btn_opt_constant_spc_eigth, btn_opt_constant_spc_quarter, btn_opt_constant_spc_half, btn_opt_constant_spc_whole);
+		else if(e.getSource().equals(btn_opt_constant_spc_eigth))
+			setSelectedButtonSet(btn_opt_constant_spc_eigth, btn_opt_constant_spc_sixteenth, btn_opt_constant_spc_quarter, btn_opt_constant_spc_half, btn_opt_constant_spc_whole);
+		else if(e.getSource().equals(btn_opt_constant_spc_quarter))
+			setSelectedButtonSet(btn_opt_constant_spc_quarter, btn_opt_constant_spc_eigth, btn_opt_constant_spc_sixteenth, btn_opt_constant_spc_half, btn_opt_constant_spc_whole);
+		else if(e.getSource().equals(btn_opt_constant_spc_half))
+			setSelectedButtonSet(btn_opt_constant_spc_half, btn_opt_constant_spc_eigth, btn_opt_constant_spc_quarter, btn_opt_constant_spc_sixteenth, btn_opt_constant_spc_whole);
+		else if(e.getSource().equals(btn_opt_constant_spc_whole))
+			setSelectedButtonSet(btn_opt_constant_spc_whole, btn_opt_constant_spc_eigth, btn_opt_constant_spc_quarter, btn_opt_constant_spc_half, btn_opt_constant_spc_sixteenth);
+		else if(e.getSource().equals(txt_midinote))
+			getGeneratedState();
+	}
+	
+	private void getGeneratedState(){
+		if(combo_opt.getSelectedItem().equals(GENERATED))
+			btn_generate.setEnabled(!txt_midinote.getText().equals(""));
+		else if(combo_opt.getSelectedItem().equals(FILE_MAP))
+			btn_generate.setEnabled(toMap != null);
+		else
+			btn_generate.setEnabled(false);
 	}
 	
 	private void runMapper(){
@@ -726,11 +849,11 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		else
 			s.outputFile = new File("output/" + str_nosel_output);
 		s.setTempo(sld_tempo.getValue());
-		float length = -1;
+		float length = 5;
 		try {
 			length = Float.parseFloat(txt_max_length.getText());
 		} catch (Exception e) {
-			Settings.fail("UNABLE TO READ MAX LENGTH! USING DEFAULT: UNLIMITED LENGTH SET");
+			Settings.fail("UNABLE TO READ MAX LENGTH! USING DEFAULT: 5 MINS");
 		}
 		s.setMacroThreshold(sld_change_macro.getValue());
 		s.setMicroThreshold(sld_change_micro.getValue());
@@ -740,10 +863,21 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		s.setDuration(makeGenerator(combo_dur, PropertyType.DURATION));
 		s.setVelocity(makeGenerator(combo_vel, PropertyType.VELOCITY));
 		s.setSpacing(makeGenerator(combo_spc, PropertyType.SPACING));
+		s.filemode = combo_opt.getSelectedItem().equals(FILE_MAP);
+		try{
+		s.setStartingNote(Integer.parseInt(txt_midinote.getText()));
+		} catch (Exception e){
+			Settings.fail("UNABLE TO READ STARTING NOTE! USING DEFAULT OF 60");
+			s.setStartingNote(60);
+		}
 		Mapper m = new Mapper(s);
 		try {
-			m.importMappingScheme();
-			m.mapFile();
+			if(s.filemode){
+				m.importMappingScheme();
+				m.mapFile();
+			}
+			else
+				m.generateNotes();
 			m.organize();
 			m.writeToFile();
 		} catch (Exception e) {}
@@ -755,6 +889,7 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 			case KARPLUS:		return makeKarplusGenerator(mode);
 			case TRIANGULAR:	return makeTriangularGenerator(mode);
 			case MARKOV:		return makeMarkovGenerator(mode);
+			case CONSTANT:		return makeConstantGenerator(mode);
 			default: 			return null;
 		}
 	}
@@ -838,10 +973,52 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 		}
 	}
 	
+	private Constant makeConstantGenerator(PropertyType mode){
+		Property p;
+		switch(mode){
+			case DURATION:		p = new Time();
+								if(btn_opt_constant_dur_sixteenth.isSelected())
+									p.setValueToClosest(Time.TICKS_PER_SIXTEENTH);
+								else if(btn_opt_constant_dur_eigth.isSelected())
+									p.setValueToClosest(Time.TICKS_PER_EIGTH);
+								else if(btn_opt_constant_dur_quarter.isSelected())
+									p.setValueToClosest(Time.TICKS_PER_QUARTER);
+								else if(btn_opt_constant_dur_half.isSelected())
+									p.setValueToClosest(Time.TICKS_PER_HALF);
+								else if(btn_opt_constant_dur_whole.isSelected())
+									p.setValueToClosest(Time.TICKS_PER_WHOLE);
+								return new Constant(p);
+			case SPACING:		p = new Time();
+								if(btn_opt_constant_spc_sixteenth.isSelected())
+									p.setValueToClosest(Time.TICKS_PER_SIXTEENTH);
+								else if(btn_opt_constant_spc_eigth.isSelected())
+									p.setValueToClosest(Time.TICKS_PER_EIGTH);
+								else if(btn_opt_constant_spc_quarter.isSelected())
+									p.setValueToClosest(Time.TICKS_PER_QUARTER);
+								else if(btn_opt_constant_spc_half.isSelected())
+									p.setValueToClosest(Time.TICKS_PER_HALF);
+								else if(btn_opt_constant_spc_whole.isSelected())
+									p.setValueToClosest(Time.TICKS_PER_WHOLE);
+								return new Constant(p);
+			case VELOCITY:		p = new Velocity();
+								p.setValueToClosest(sld_opt_constant_vel.getValue());
+								return new Constant(p);
+			default:			return new Constant(mode);
+		}
+	}
+	
 	private void setSelectedButtonSet(JRadioButton selected, JRadioButton unselected0, JRadioButton unselected1){
 		selected.setSelected(true);
 		unselected0.setSelected(false);
 		unselected1.setSelected(false);
+	}
+	
+	private void setSelectedButtonSet(JRadioButton selected, JRadioButton unselected0, JRadioButton unselected1, JRadioButton unselected2, JRadioButton unselected3){
+		selected.setSelected(true);
+		unselected0.setSelected(false);
+		unselected1.setSelected(false);
+		unselected2.setSelected(false);
+		unselected3.setSelected(false);
 	}
 
 	@Override
@@ -882,6 +1059,8 @@ public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 			lbl_change_macro_val.setText("" + sld_change_macro.getValue());
 		else if(e.getSource().equals(sld_change_micro))
 			lbl_change_micro_val.setText("" + sld_change_micro.getValue());
+		else if(e.getSource().equals(sld_opt_constant_vel))
+			lbl_opt_constant_vel_val.setText("" + sld_opt_constant_vel.getValue());
 	}
 
 	

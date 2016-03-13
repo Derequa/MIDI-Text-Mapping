@@ -3,6 +3,7 @@ package mapping;
 import java.io.File;
 import java.io.PrintStream;
 
+import gernerators.Constant;
 import gernerators.FNoise;
 import gernerators.Generator;
 import gernerators.KarplusStrong;
@@ -47,10 +48,13 @@ public class Settings {
 	
 	// The file to process and map to notes
 	private File toMap;
-	// The file defining how to map bytes to notes
+	
+	/** The file defining how to map bytes to notes */
 	public File mappingScheme;
-	// The file to write to
+	/** The file to write to */
 	public File outputFile;
+	/** Should we get notes from file? */
+	public boolean filemode = true;
 	
 	// The maximum tick we can go to (length)
 	private int maxTick;
@@ -61,6 +65,7 @@ public class Settings {
 	// Thresholds for stepping the organizers
 	private int macroThreshold = MACRO_ORG_DEFAULT;
 	private int microThreshold = MICRO_ORG_DEFAULT;
+	private int startingNote = -1;
 	
 	// Generators for each property
 	private Generator macroOrg;
@@ -109,6 +114,14 @@ public class Settings {
 	// ---------------------------------------------------------------------
 	// Getter Methods
 	// ---------------------------------------------------------------------
+	
+	/**
+	 * This gets the starting note for the mapper, if in generation mode.
+	 * @return The starting note as an integer.
+	 */
+	public int getStartingNote(){
+		return startingNote;
+	}
 	
 	/**
 	 * This gets the current threshold for macro-organizing.
@@ -211,6 +224,18 @@ public class Settings {
 	// ---------------------------------------------------------------------
 	
 	/**
+	 * This sets a starting note for generation mode.
+	 * @param note The note to set to.
+	 */
+	public void setStartingNote(int note){
+		if(note < 0)
+			note *= -1;
+		if(note > 127)
+			note %= 127;
+		startingNote = note;
+	}
+	
+	/**
 	 * This sets a new file to map bytes from.
 	 * @param toMap The file to map bytes from.
 	 * @throws Exception If the file is null.
@@ -298,6 +323,8 @@ public class Settings {
 								break;
 			case MARKOV:		macroOrg = new Markov(PropertyType.MACRO_ORG);
 								break;
+			case CONSTANT:		macroOrg = new Constant(PropertyType.MACRO_ORG);
+								break;
 			default:			fail("INVALID MACRO ORGANIZATION GENERATOR MODE!");
 								break;
 		}
@@ -317,6 +344,8 @@ public class Settings {
 			case TRIANGULAR:	microOrg = new TriangularDist(PropertyType.MICRO_ORG);
 								break;
 			case MARKOV:		microOrg = new Markov(PropertyType.MICRO_ORG);
+								break;
+			case CONSTANT:		microOrg = new Constant(PropertyType.MICRO_ORG);
 								break;
 			default:			fail("INVALID MICRO ORGANIZATION GENERATOR MODE!");
 								break;
@@ -338,6 +367,8 @@ public class Settings {
 								break;
 			case MARKOV:		duration = new Markov(PropertyType.DURATION);
 								break;
+			case CONSTANT:		duration = new Constant(PropertyType.DURATION);
+								break;
 			default:			fail("INVALID DURATION GENERATOR MODE!");
 								break;
 		}
@@ -358,6 +389,8 @@ public class Settings {
 								break;
 			case MARKOV:		velocity = new Markov(PropertyType.VELOCITY);
 								break;
+			case CONSTANT:		velocity = new Constant(PropertyType.VELOCITY);
+								break;
 			default:			fail("INVALID VELOCITY GENERATOR MODE!");
 								break;
 		}
@@ -377,6 +410,8 @@ public class Settings {
 			case TRIANGULAR:	spacing = new TriangularDist(PropertyType.SPACING);
 								break;
 			case MARKOV:		spacing = new Markov(PropertyType.SPACING);
+								break;
+			case CONSTANT:		spacing = new Constant(PropertyType.SPACING);
 								break;
 			default:			fail("INVALID SPACING GENERATOR MODE!");
 								break;

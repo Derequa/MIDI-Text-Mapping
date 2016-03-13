@@ -44,7 +44,8 @@ public class Mapper {
 	 * @throws Exception If the file cannot be opened or has an invalid format.
 	 */
 	public void importMappingScheme() throws Exception{
-		importMappingScheme(settings.mappingScheme);
+		if(settings.filemode)
+			importMappingScheme(settings.mappingScheme);
 	}
 	
 	/**
@@ -54,6 +55,8 @@ public class Mapper {
 	 * @throws Exception If the file cannot be opened or has an invalid format.
 	 */
 	public void importMappingScheme(File f) throws Exception{
+		if(!settings.filemode)
+			return;
 		try{
 			// If null was give, read in the default mapping string
 			if(f == null)
@@ -74,7 +77,8 @@ public class Mapper {
 	 * This maps the file defined in the Settings object for this Mapper.
 	 */
 	public void mapFile(){
-		mapFile(settings.getFileToMap());
+		if(settings.filemode)
+			mapFile(settings.getFileToMap());
 	}
 
 	/**
@@ -82,6 +86,8 @@ public class Mapper {
 	 * @param The File object to map.
 	 */
 	public void mapFile(File f){
+		if(!settings.filemode)
+			return;
 		Settings.statusMessage("READING FILE...");
 		// Check for null
 		if(f == null){
@@ -184,6 +190,19 @@ public class Mapper {
 		mappedNotes.clear();
 	}
 	
+	/**
+	 * Generate notes at the starting note until the tick in the settings object.
+	 */
+	public void generateNotes(){
+		if(settings.filemode)
+			return;
+		int endTick = settings.getLength();
+		if(endTick == Integer.MAX_VALUE)
+			return;
+		for(int counter = 0 ; counter < endTick ; counter += settings.getSpacingGenerator().getResult().getValue())
+			mappedNotes.add(new Note(settings.getStartingNote(), settings.getVelocityGenerator().getNext().getValue(), counter, settings.getDurationGenerator().getNext().getValue()));
+	}
+	
 	// -----------------------------------------------------------------
 	// Private Helper Methods
 	// -----------------------------------------------------------------
@@ -283,7 +302,7 @@ public class Mapper {
 	 */
 	private void organize(Generator g, int changeThreshold){
 		// This counts beats so we know when to step the generator
-		int beatCounter = 0;
+		float beatCounter = 0;
 		// The most recent time we have encountered
 		int newestTime = -1;
 		for(Note n : mappedNotes){
@@ -291,7 +310,7 @@ public class Mapper {
 			if(n.getStartingTime() > newestTime){
 				int lastTime = newestTime;
 				newestTime = n.getStartingTime();
-				beatCounter += (newestTime - lastTime) / MidiFile.TICKS_PER_BEAT;
+				beatCounter += (float) (newestTime - lastTime) / MidiFile.TICKS_PER_BEAT;
 			}
 			// If we are past the beat threshold, reset and step the generator
 			if(beatCounter >= changeThreshold){
