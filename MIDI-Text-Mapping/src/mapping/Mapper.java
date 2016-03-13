@@ -141,17 +141,14 @@ public class Mapper {
 	 * generators to the mapped Note objects.
 	 */
 	public void organize(){
+		Collections.sort(mappedNotes);
 		Settings.statusMessage("ORGANIZING FILE...");
 		// High-Level organization call, if there is a given Generator
-		if(settings.getMacroOrgGenerator() != null){
-			Collections.sort(mappedNotes);
+		if(settings.getMacroOrgGenerator() != null)
 			organize(settings.getMacroOrgGenerator(), settings.getMacroThreshold());
-		}
 		// Low-Level organization call, if there is a given Generator
-		if(settings.getMicroOrgGenerator() != null){
-			Collections.sort(mappedNotes);
+		if(settings.getMicroOrgGenerator() != null)
 			organize(settings.getMicroOrgGenerator(), settings.getMicroThreshold());
-		}
 		Settings.statusMessage("DONE ORGANIZING FILE!");
 	}
 	
@@ -304,7 +301,7 @@ public class Mapper {
 		// This counts beats so we know when to step the generator
 		float beatCounter = 0;
 		// The most recent time we have encountered
-		int newestTime = -1;
+		int newestTime = 0;
 		for(Note n : mappedNotes){
 			// If this note is more recent, update the beat counter and newest time
 			if(n.getStartingTime() > newestTime){
@@ -313,7 +310,7 @@ public class Mapper {
 				beatCounter += (float) (newestTime - lastTime) / MidiFile.TICKS_PER_BEAT;
 			}
 			// If we are past the beat threshold, reset and step the generator
-			if(beatCounter >= changeThreshold){
+			if(beatCounter > changeThreshold){
 				g.step();
 				beatCounter = 0;
 			}

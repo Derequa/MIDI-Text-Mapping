@@ -7,14 +7,28 @@ import gernerators.properties.Time;
 import gernerators.properties.Velocity;
 import gernerators.properties.Organization.OrgMode;
 
+/**
+ * This class lets you "generate" the same property over and over.
+ * @author Derek Batts - dsbatts@ncsu.edu
+ *
+ */
 public class Constant implements Generator {
 	
+	// The property to always return
 	private Property value;
 	
+	/**
+	 * This sets up the generator with the constant value.
+	 * @param constantValue The value to alwasy return.
+	 */
 	public Constant(Property constantValue){
 		value = constantValue;
 	}
 
+	/**
+	 * This sets up the generator with a randomized property of the given type.
+	 * @param mode The type of property to randomize an always return.
+	 */
 	public Constant(PropertyType mode) {
 		switch(mode){
 			case MACRO_ORG:		value = new Organization(OrgMode.MACRO);

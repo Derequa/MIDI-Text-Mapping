@@ -21,13 +21,13 @@ public class KarplusStrong implements Generator {
 	/** A constant for the default reset threshold */
 	public static final int DEFAULT_THRESHOLD = 20;
 	/** A constant for the maximum supported buffer size */
-	public static final int MAX_BUFFER_SIZE = 30;
+	public static final int MAX_BUFFER_SIZE = 20;
 	/** A constant for the maximum threshold size */
-	public static final int MAX_THRESHOLD = 70;
+	public static final int MAX_THRESHOLD = 40;
 	/** A constant for the minimum buffer size */
 	public static final int MIN_BUFFER_SIZE = 5;
 	/** A constant for the minimum threshold size */
-	public static final int MIN_THRESHOLD = 5;
+	public static final int MIN_THRESHOLD = 2;
 	
 	// The reset threshold for this instance
 	private int resetThreshold;
