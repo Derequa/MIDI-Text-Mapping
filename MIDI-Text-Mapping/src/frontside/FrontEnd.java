@@ -46,50 +46,81 @@ import mapping.Settings;
  */
 public class FrontEnd extends JFrame implements ActionListener, ChangeListener {
 
-	// Because reasons
+	/** Because reasons */
 	private static final long serialVersionUID = 4829661262223915297L;
 	
-	// Standard dimensions for various components
+	/** Dimensions for the console text area */
 	private Dimension consoleSize = new Dimension(320, 540);
+	/** Dimensions for the card-panels for each generator */
 	private Dimension cardSize = new Dimension(330, 160);
 	
-	// Constant strings
+	/** The title string */
 	private final String TITLE = "MIDI File Mapper";
+	/** 1/f Noise option string for all generator combo boxes */
 	private final String FNOISE = "1/f Noise";
+	/** Karplus-Strong option string for all generator combo boxes */
 	private final String KARPLUS = "Karplus/Strong";
+	/** Triangular distribution option string for all generator combo boxes */
 	private final String TRIANGULAR = "Triangular";
+	/** Markov process option string for all generator combo boxes */
 	private final String MARKOV = "Markov";
+	/** Mapping-only mode option string for organization generator combo boxes*/
 	private final String NONE = "None (Mapping Only)";
+	/** Constant-value mode option string for duration, spacing, and velocity generator combo boxes */
 	private final String CONSTANT = "Constant";
+	/** Generated-mode option string for the program mode combo box */
 	private final String GENERATED = "Generation Mode";
+	/** File-mapping mode option string for the program mode combo box */
 	private final String FILE_MAP = "File-Mapping Mode";
 	
-	// String arrays for combo boxes
+	/** Array of option strings for the program mode combo box */
 	private String[] opt_strings = {FILE_MAP, GENERATED};
+	/** Array of option strings for organization generator combo boxes */
 	private String[] org_strings = {FNOISE, KARPLUS, TRIANGULAR, MARKOV, NONE};
+	/** Array of option strings for duration, spacing, and velocity generator combo boxes */
 	private String[] std_strings = {FNOISE, KARPLUS, TRIANGULAR, MARKOV, CONSTANT};
 	
-	// Strings for labels, borders, etc
+	/** String for the border of the options panel */
 	private String str_options = "Mode";
+	/** String for the border of the console panel */
 	private String str_console = "Console Output";
+	/** String for the border of the macro organization generator panel */
 	private String str_org_macro = "Compositional Method (High-level)";
+	/** String for the border of the micro organization generator panel */
 	private String str_org_micro = "Compositional Method (Low-level)";
+	/** String for the border of the duration generator panel */
 	private String str_dur = "Note Duration Generation Method";
+	/** String for the border of the velocity generator panel */
 	private String str_vel = "Note Velocity Generation Method";
+	/** String for the border of the spacing generator panel */
 	private String str_spc = "Note Spacing Generation Method";
+	/** String for no file selected */
 	private String str_nosel_file = "No file selected";
+	/** String for no directory selected */
 	private String str_nosel_dir = "No directory selected";
+	/** String for no mapping scheme selected */
 	private String str_nosel_map = "No mapping scheme selected";
+	/** String for the label describing the selected mapping scheme */
 	private String str_lbl_map = "Selected Mapping Scheme:";
+	/** String for the button to choose a new mapping scheme */
 	private String str_btn_map = "Set Mapping Scheme";
+	/** String for the border of an 1/f Noise generator panel */
 	private String str_opt_fnoise = FNOISE + " Options";
+	/** String for the border of a karplus-strong generator panel */
 	private String str_opt_karplus = KARPLUS + " Options";
+	/** String for the border of a triangular distribution generator panel */
 	private String str_opt_triangular = TRIANGULAR + " Options";
+	/** String for the border of a Markov process generator panel */
 	private String str_opt_markov = MARKOV + " Options";
+	/** String for the border of a "none" generator panel */
 	private String str_opt_none = "No Options";
+	/** String for the border of a constant property generator panel */
 	private String str_opt_constant = "Options";
+	/** String for the dice number option in the 1/f noise generator panel */
 	private String str_sub_opt_fnoise = "Number of Dice:";
+	/** String for the buffer size option in the karplus-strong generator panel */
 	private String str_sub_opt_karplus_buf = "Buffer Size:";
+	/** String for the threshold value label in the karplus-strong generator panel */
 	private String str_sub_opt_karplus_thres = "Reset Threshold:";
 	private String str_sub_opt_triangular_left = "Left Slant";
 	private String str_sub_opt_triangular_norm = "Normal";
